@@ -119,22 +119,22 @@ function unite_and_hamilton()
 
     # graphplot(g, nodelabel=1:nv(g), curves=false, nodelabeldist=1.5, nodelabelangleoffset=π/4)
     deg = degree(g)
-    println(deg)
+#     println(deg)
     hamilton = SimpleGraph(nv(g))
     df = dfs_tree(g, articulation(g)[1])
-    println(neighbors(df, articulation(g)[1]))
+#     println(neighbors(df, articulation(g)[1]))
     for a in articulation(g)
         df = dfs_tree(g, a)
         nei = neighbors(df, a)
-        println("nei = ", nei)
+#         println("nei = ", nei)
         allN = neighbors(g, a)
-        println("allN = ", allN)
+#         println("allN = ", allN)
         for n in 1:2
-            println(nei[n])
+#             println(nei[n])
             add_edge!(hamilton, a, nei[n])
             deleteat!(allN, findall( x -> x == nei[n], allN ))
         end
-        println("allN = ", allN)
+#         println("allN = ", allN)
         for ind in 1:length(allN)-1
             add_edge!(hamilton,  allN[ind], allN[ind+1])
         end
