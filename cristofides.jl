@@ -3,15 +3,41 @@ using EzXML
 using GraphsMatching
 using GraphPlot
 
-testdata = String(read("test_cristofides.xml"));
-doc = parsexml(testdata)
+function calculate_graph_cost(graph, cost_matrix, n)
+    graph_cost = 0
+    for edge in edges(graph)
+        u, v = src(edge), dst(edge)
+        edge_cost = cost_matrix[u, v]
+        println("edge $u -> $v = ", edge_cost)
 
-function minimum_spanning_tree() 
+        graph_cost = graph_cost + edge_cost
+    end
 
-    graph = root(doc)
+    return graph_cost
+end
+
+function count_vertex_edges(graph, n)
+    result = zeros(1, n)
+
+    for edge in edges(graph)
+        u, v = src(edge), dst(edge)
+        result[1, u] = result[1, u] + 1
+        result[1, v] = result[1, v] + 1
+    end
+
+    return result
+end
+
+# Parameters
+# xml_graph -> graph defined in XML format
+# Returns
+# c -> cost matrix
+# n -> number of elements in the graph
+function graph_to_cost_matrix(xml_graph)
+    graph = root(xml_graph)
     n = countelements(graph)
     # println(n)
-    c = zeros(n,n)
+    c = zeros(n,n) # cost matrix
     i = 1
     for vertex in eachelement(graph)
         for edge in eachelement(vertex)
@@ -27,35 +53,71 @@ function minimum_spanning_tree()
         i=i+1
     end
 
-    mst = SimpleGraph(n)
+    return c, n
+end
+
+# Parameters
+# n -> number of elements in the graph
+# Returns 
+# new_graph -> complete graph with n nodes
+function create_complete_graph(n)
+    new_graph = SimpleGraph(n)
 
 	for i in 1:n
 		for j in i+1:n
             if i == j
                 continue
             end
-            add_edge!(mst, i, j)
+            add_edge!(new_graph, i, j)
 		end
 	end
 
-    if nv(mst) > ne(mst)
-        e = prim_mst(mst, c)
-    else
-        e = kruskal_mst(mst, c)
-    end
-    println(e)
+    println("create_complete_graph ", new_graph)
 
-    temp = SimpleGraph(n)
+    return new_graph
+end
+
+# Parameters
+# graph -> graph 
+# c -> cost matrix
+# n -> number of vertices
+# Returns
+# mst -> the minimum spanning tree of the provided graph
+# c -> cost matrix (same as the one provided)
+function minimum_spanning_tree(graph, c, n) 
+    if nv(graph) > ne(graph) # necessary if "graph" complete?
+        e = prim_mst(graph, c)
+    else
+        e = kruskal_mst(graph, c)
+    end
+    println("A ", e)
+
+    mst = SimpleGraph(n)
     for edge in e
-        add_edge!(temp, src(edge), dst(edge))
+        add_edge!(mst, src(edge), dst(edge))
     end
     
-    # graphplot(temp, nodelabel=1:nv(temp), curves=false)
+    # graphplot(mst, nodelabel=1:nv(mst), curves=false)
 
-    return temp, c
+    return mst, c
 
 end
 
+# Function created to decouple graph creation from 
+# spanning tree creation.
+# Parameters
+# cost_matrix -> cost matrix of the graph
+# n -> number of nodes in the graph
+# Returns
+# mst -> the minimum spanning tree
+function minimum_spanning_tree_from_complete_graph(cost_matrix, n)
+    graph = create_complete_graph(n)
+    mst, c = minimum_spanning_tree(graph, cost_matrix, n)
+    return mst, c
+end
+
+# g -> SimpleGraph object
+# c -> cost matrix
 function count_degree_and_form_subgraph(g, c) 
 
     # g, c = minimum_spanning_tree()
@@ -88,6 +150,8 @@ function count_degree_and_form_subgraph(g, c)
     return subg, subgc, index
 end
 
+# subg -> subgraph (SimpleGraph object)
+# subgc -> subgraph's cost matrix.
 function mwpm(subg, subgc) 
 
     w = Dict{Graphs.SimpleGraphs.SimpleEdge{Int64}, Int64}()
@@ -108,8 +172,8 @@ function mwpm(subg, subgc)
 end
 
 
-function unite_and_hamilton()
-    g, c = minimum_spanning_tree()
+function unite_and_hamilton(cost_matrix, num_vertices)
+    g, c = minimum_spanning_tree_from_complete_graph(cost_matrix, num_vertices)
     subg, subgc, index = count_degree_and_form_subgraph(g, c)
     mw = mwpm(subg, subgc)
     # g U mw
@@ -147,5 +211,8 @@ function unite_and_hamilton()
         end
         # println(i, " -> ", j)
     end
-    graphplot(hamilton, nodelabel=1:nv(g), curves=false)
+    
+    gplot(hamilton, nodelabel=1:nv(g))
+
+    return hamilton
 end
