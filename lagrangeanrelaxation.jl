@@ -1,3 +1,5 @@
+using Compose
+import Cairo, Fontconfig
 include("cristofides.jl")
 include("onetree.jl")
 println(dirname(pwd()))
@@ -23,8 +25,8 @@ function lagrangean_relaxation()
     u = zeros(1, n)
 
     # getting upper bound, christofides produces feasible solutions
-    christofides_sol = unite_and_hamilton(original_cost_matrix, n)
-    current_upper_bound = calculate_graph_cost(christofides_sol, original_cost_matrix, n) 
+    #christofides_sol = unite_and_hamilton(original_cost_matrix, n)
+    #current_upper_bound = calculate_graph_cost(christofides_sol, original_cost_matrix, n) 
 
     for i = 1:max_iterations
         # updating cost matrix based on lagrangian multipliers
@@ -36,8 +38,10 @@ function lagrangean_relaxation()
         println("current_cost_matrix ", current_cost_matrix)
 
         # getting upper bound, christofides produces feasible solutions
-        #christofides_sol = unite_and_hamilton(current_cost_matrix, n)
-        #current_upper_bound = calculate_graph_cost(christofides_sol, current_cost_matrix, n) 
+        christofides_sol = unite_and_hamilton(current_cost_matrix, n)
+        current_upper_bound = calculate_graph_cost(christofides_sol, current_cost_matrix, n) 
+
+        draw(PDF(string("christofides_", i, ".pdf"), 16cm, 16cm), gplot(christofides_sol))
 
         # getting lower bound
         one_tree_sol = one_tree_graph(current_cost_matrix, n)

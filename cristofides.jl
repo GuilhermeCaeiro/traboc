@@ -154,8 +154,9 @@ end
 # subgc -> subgraph's cost matrix.
 function mwpm(subg, subgc) 
 
-    w = Dict{Graphs.SimpleGraphs.SimpleEdge{Int64}, Int64}()
+    w = Dict{Graphs.SimpleGraphs.SimpleEdge{Int64}, Float64}()
     for e in edges(subg)
+        println("mwpm ", src(e), " ", dst(e), " ", subgc[src(e),dst(e)], " ", typeof(subgc[src(e),dst(e)]))
         w[Edge(Int(src(e)),Int(dst(e)))] = subgc[src(e),dst(e)]
     end
     match = minimum_weight_perfect_matching(subg, w)
@@ -212,7 +213,7 @@ function unite_and_hamilton(cost_matrix, num_vertices)
         # println(i, " -> ", j)
     end
     
-    gplot(hamilton, nodelabel=1:nv(g))
+    #gplot(hamilton, nodelabel=1:nv(g))
 
     return hamilton
 end
