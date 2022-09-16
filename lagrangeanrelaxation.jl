@@ -39,7 +39,8 @@ function lagrangean_relaxation()
 
         # getting upper bound, christofides produces feasible solutions
         christofides_sol = unite_and_hamilton(current_cost_matrix, n)
-        current_upper_bound = calculate_graph_cost(christofides_sol, current_cost_matrix, n) 
+        #current_upper_bound = calculate_graph_cost(christofides_sol, current_cost_matrix, n) 
+        current_upper_bound = calculate_graph_cost(christofides_sol, original_cost_matrix, n) 
 
         draw(PDF(string("christofides_", i, ".pdf"), 16cm, 16cm), gplot(christofides_sol))
 
