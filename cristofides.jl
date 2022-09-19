@@ -137,9 +137,12 @@ function count_degree_and_form_subgraph(g, c)
     # println("index = ", index) # indice dos vertices com grau negativo
     subgc = zeros(nv(subg),nv(subg))
     i = 1
-    while index[i] != 0 && i < nv(g)
+    while index[i] != 0 && i <= nv(g)
         j=i+1
-        while index[j] != 0 && j < nv(g)
+        if j >= nv(g)
+            break
+        end
+        while j <= nv(g) && index[j] != 0
             add_edge!(subg, i, j)
             subgc[i,j] = c[index[i],index[j]]
             j+=1
@@ -166,13 +169,14 @@ function mwpm(subg, subgc)
     end
     # println("w = ", w)
     # draw(PDF(string("./output/subg", ".pdf"), 16cm, 16cm), gplot(subg, nodelabel=1:nv(subg)))
-    match = minimum_weight_perfect_matching(subg, w, tmaxscale=100)
+    match = minimum_weight_perfect_matching(subg, w, tmaxscale=45.)
     temp = SimpleGraph(nv(subg))
     for i in 1:nv(subg)
         add_edge!(temp, i, match.mate[i])
     end
     return temp
 end
+
 
 function euler_path(g)
      
