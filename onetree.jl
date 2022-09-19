@@ -22,7 +22,7 @@ function partial_graph(n, ignore)
 		end
 	end
 
-    println("partial_graph ", new_graph)
+    #println("partial_graph ", new_graph)
 
     return new_graph
 end
