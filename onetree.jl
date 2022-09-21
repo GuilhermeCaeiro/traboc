@@ -27,14 +27,19 @@ function partial_graph(n, ignore)
     return new_graph
 end
 
+#
+# Function one_tree_graph
+# generates a one-tree graph with n nodes and sorted by cost matrix
+#
 # Parameters 
-# cost_matrix -> cost_matrix
+# exp_id -> expetiment id
+# cost_matrix -> cost matrix
 # num_nodes -> number of nodes in the graph
 # Returns
 # mst -> the minimum spanning tree turned into a 1-tree.
-function one_tree_graph(cost_matrix, num_nodes)
+function one_tree_graph(exp_id, cost_matrix, num_nodes)
     graph = partial_graph(num_nodes, 1)
-    mst, c = minimum_spanning_tree(graph, cost_matrix, num_nodes)
+    mst, c = minimun_spanning_tree(exp_id, graph, cost_matrix, num_nodes)
     # Adding the two cheapest edges from node 1
     sorted_nodes = sortperm(cost_matrix[1, 2:end]) # must ignore the first column
     add_edge!(mst, 1, sorted_nodes[1] + 1) # + 1 to compensate for the indice of the first column that is ignored in the previous line 

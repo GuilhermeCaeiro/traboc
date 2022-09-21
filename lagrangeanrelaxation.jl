@@ -1,10 +1,14 @@
+using Logging
+
 include("cristofides.jl")
 include("onetree.jl")
-println(dirname(pwd()))
+include("utils.jl")
 
-function lagrangean_relaxation()
+#println(dirname(pwd()))
 
-    max_iterations = 100
+function lagrangean_relaxation(exp_id::String,testdatafile::String,max_iterations::Int16,epsilon::Float64)
+
+    save_step(exp_id,"lagrangean_relaxation","START")
     upper_bounds = Array{Float64}(undef, 0)
     lower_bounds = Array{Float64}(undef, 0)
     gaps = Array{Float64}(undef, 0)
@@ -12,10 +16,8 @@ function lagrangean_relaxation()
     current_upper_bound = Inf
     current_lower_bound = -Inf
     gap_threshold = 0.00001
-    epsilon = 1
 
-
-    testdata = String(read("/home/guilherme/Documentos/workspace/traboc/test_cristofides.xml"));
+    testdata = String(read(testdatafile));
     xml_graph = parsexml(testdata)
     original_cost_matrix, n = graph_to_cost_matrix(xml_graph)
 
@@ -23,8 +25,10 @@ function lagrangean_relaxation()
     u = zeros(1, n)
 
     # getting upper bound, christofides produces feasible solutions
-    christofides_sol = unite_and_hamilton(original_cost_matrix, n)
+    christofides_sol = unite_and_hamilton(exp_id,original_cost_matrix, n)
     current_upper_bound = calculate_graph_cost(christofides_sol, original_cost_matrix, n) 
+
+    save_step(exp_id,"lagrangean_relaxation","ITERATIONS")
 
     for i = 1:max_iterations
         # updating cost matrix based on lagrangian multipliers
@@ -33,7 +37,7 @@ function lagrangean_relaxation()
             current_cost_matrix[:, j] = original_cost_matrix[:, j] .- u[1, j]
         end
 
-        println("current_cost_matrix ", current_cost_matrix)
+        @debug "current_cost_matrix " current_cost_matrix
 
         # getting upper bound, christofides produces feasible solutions
         #christofides_sol = unite_and_hamilton(current_cost_matrix, n)
@@ -62,6 +66,8 @@ function lagrangean_relaxation()
         push!(lower_bounds, current_lower_bound)
 
         #break
+        save_step(exp_id,"lagrangean_relaxation","IT_$i")
+
     end
 
     println("ubs ", upper_bounds)
@@ -70,6 +76,8 @@ function lagrangean_relaxation()
     println("min ub ", minimum(upper_bounds))
     println("max lb ", maximum(lower_bounds))
     println("min gap ", minimum(gaps))
-end
 
-lagrangean_relaxation()
+
+    save_step(exp_id,"lagrangean_relaxation","FINISH")
+
+end
