@@ -25,15 +25,15 @@ function lagrangean_relaxation()
 
     testdata = String(read("/home/guilherme/Documentos/workspace/traboc/test_cristofides.xml"));
     xml_graph = parsexml(testdata)
-    #original_cost_matrix, n = graph_to_cost_matrix(xml_graph)
-    original_cost_matrix = [
-        0  30 26 50 40 
-        30  0 24 40 50
-        26 24  0 24 26
-        50 40 24  0 30
-        40 50 26 30  0
-    ]
-    n = 5
+    original_cost_matrix, n = graph_to_cost_matrix(xml_graph)
+    #original_cost_matrix = [
+    #    0  30 26 50 40 
+    #    30  0 24 40 50
+    #    26 24  0 24 26
+    #    50 40 24  0 30
+    #    40 50 26 30  0
+    #]
+    #n = 5
 
     #current_cost_matrix = deepcopy(original_cost_matrix)
     u = zeros(1, n)
@@ -47,7 +47,10 @@ function lagrangean_relaxation()
         current_cost_matrix = zeros(n, n)
         for j in 1:n
             current_cost_matrix[:, j] = original_cost_matrix[:, j] .- u[1, j]
+            current_cost_matrix[j, j] = 0.0
         end
+
+        #println(current_cost_matrix)
 
         #println("current_cost_matrix ", current_cost_matrix)
 
@@ -56,13 +59,15 @@ function lagrangean_relaxation()
         #christofides_sol = unite_and_hamilton(original_cost_matrix, n)
         #current_upper_bound = calculate_graph_cost(christofides_sol, current_cost_matrix, n) 
         current_upper_bound = calculate_graph_cost(christofides_sol, original_cost_matrix, n) 
+        
 
         #draw(PDF(string("christofides_", i, ".pdf"), 16cm, 16cm), gplot(christofides_sol))
 
         # getting lower bound
         one_tree_sol = one_tree_graph(current_cost_matrix, n)
-        #current_lower_bound = calculate_graph_cost(one_tree_sol, current_cost_matrix, n)
-        current_lower_bound = calculate_graph_cost(one_tree_sol, original_cost_matrix, n)
+        current_lower_bound = calculate_graph_cost(one_tree_sol, current_cost_matrix, n)
+        #current_lower_bound = calculate_graph_cost(one_tree_sol, original_cost_matrix, n) 
+        #current_lower_bound = current_lower_bound + 2 * sum(u .^ 2) 
 
         if current_upper_bound < best_upper_bound
             best_upper_bound = current_upper_bound
@@ -84,21 +89,20 @@ function lagrangean_relaxation()
         mi = epsilon * (1.05 * current_upper_bound - current_lower_bound) / denominator
         u = u + mi * G
 
-        draw(PDF(string("christofides_", i, ".pdf"), 16cm, 16cm), gplot(christofides_sol, nodelabel=1:nv(one_tree_sol)))
-        draw(PDF(string("onetree_", i, ".pdf"), 16cm, 16cm), gplot(one_tree_sol, nodelabel=1:nv(one_tree_sol)))
+        #draw(PDF(string("christofides_", i, ".pdf"), 16cm, 16cm), gplot(christofides_sol, nodelabel=1:nv(one_tree_sol)))
+        #draw(PDF(string("onetree_", i, ".pdf"), 16cm, 16cm), gplot(one_tree_sol, nodelabel=1:nv(one_tree_sol)))
 
         push!(gaps, optimality_gap)
         push!(upper_bounds, current_upper_bound)
         push!(lower_bounds, current_lower_bound)
 
-        if mod(i, 1) == 0
+        if mod(i, 100) == 0
             print("Iteration ", i, " ")
             print(" ub ", current_upper_bound, " ")
             print(" lb ", current_lower_bound, " ")
             print(" gap ", optimality_gap, " ")
+            println(" best boundaries (u/l) ", best_upper_bound, "/", best_lower_bound, " ")
             println("edges_per_vertex ", edges_per_vertex)
-            #println("mi ", mi)
-            #println("u ", u)
             println(" onetree cost on original costs ", calculate_graph_cost(one_tree_sol, original_cost_matrix, n), " ")
             println(" christofides cost on original costs ", calculate_graph_cost(christofides_sol, original_cost_matrix, n), " ")
             println(" onetree cost on current costs ", calculate_graph_cost(one_tree_sol, current_cost_matrix, n), " ")
