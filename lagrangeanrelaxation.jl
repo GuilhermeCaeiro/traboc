@@ -52,8 +52,17 @@ function lagrangean_relaxation()
         
         # lagrangia vars update
         edges_per_vertex = count_vertex_edges(one_tree_sol, n)
-        mi = epsilon * (current_upper_bound - current_lower_bound) / sum((2 .- edges_per_vertex) .^ 2)
-        u = u + mi * (2 .- edges_per_vertex)
+        denominador = sum((2 .- edges_per_vertex) .^ 2)
+        menor_dem = min(denominador, menor_dem)
+        if denominador != 0
+            mi = epsilon * (1.06*current_upper_bound - current_lower_bound) / (denominador)
+            u = u + mi * (2 .- edges_per_vertex)
+        else
+            println("DENOMINADOR IGUAL A 0, se a solução atual for viavel então é otima")
+            draw(PDF(string("./output/one_tree_sol_SolDoDenominador0", ".pdf"), 16cm, 16cm), gplot(one_tree_sol, nodelabel=1:nv(one_tree_sol)))
+            draw(PDF(string("./output/christofides_sol_SolDoDenominador0", ".pdf"), 16cm, 16cm), gplot(christofides_sol, nodelabel=1:nv(christofides_sol)))
+            break
+        end
 
         println("ub ", current_upper_bound)
         println("lb ", current_lower_bound)
