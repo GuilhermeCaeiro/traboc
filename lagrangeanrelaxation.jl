@@ -53,7 +53,6 @@ function lagrangean_relaxation()
         # lagrangia vars update
         edges_per_vertex = count_vertex_edges(one_tree_sol, n)
         denominador = sum((2 .- edges_per_vertex) .^ 2)
-        menor_dem = min(denominador, menor_dem)
         if denominador != 0
             mi = epsilon * (1.06*current_upper_bound - current_lower_bound) / (denominador)
             u = u + mi * (2 .- edges_per_vertex)
