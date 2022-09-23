@@ -6,7 +6,7 @@ println(dirname(pwd()))
 
 function lagrangean_relaxation()
 
-    max_iterations = 100000
+    max_iterations = 10000
     upper_bounds = Array{Float64}(undef, 0)
     lower_bounds = Array{Float64}(undef, 0)
     gaps = Array{Float64}(undef, 0)
@@ -99,8 +99,8 @@ function lagrangean_relaxation()
         denominator = sum(G .^ 2)
         #mi = epsilon * (current_upper_bound - current_lower_bound) / denominator
         #mi = epsilon * (1.05 * current_upper_bound - current_lower_bound) / denominator
-        mi = epsilon * (best_upper_bound - current_lower_bound) / denominator
-        #mi = epsilon * (1.05 * best_upper_bound - current_lower_bound) / denominator
+        #mi = epsilon * (best_upper_bound - current_lower_bound) / denominator
+        mi = epsilon * (1.05 * best_upper_bound - current_lower_bound) / denominator
         u = u + mi * G
 
         #draw(PDF(string("christofides_", i, ".pdf"), 16cm, 16cm), gplot(christofides_sol, nodelabel=1:nv(one_tree_sol)))
@@ -123,7 +123,7 @@ function lagrangean_relaxation()
             println(" christofides cost on current costs ", calculate_graph_cost(christofides_sol, current_cost_matrix, n), " ")
         end
 
-        if optimality_gap <= gap_threshold
+        if optimality_gap == 0
             println("Optimal solution found. GAP ", optimality_gap, " BLB ", best_lower_bound, " BUB ", best_upper_bound, " CLB ", current_lower_bound, " CUB ", current_upper_bound, " UB ", calculate_graph_cost(christofides_sol, original_cost_matrix, n))
             println("min ub ", minimum(upper_bounds))
             println("max lb ", maximum(lower_bounds))
@@ -131,6 +131,15 @@ function lagrangean_relaxation()
             #return optimality_gap, best_lower_bound, best_upper_bound, best_ub_sol, best_lb_sol
             break
         end
+
+        if optimality_gap <= gap_threshold
+            println("Acceptable solution found. GAP ", optimality_gap, " BLB ", best_lower_bound, " BUB ", best_upper_bound, " CLB ", current_lower_bound, " CUB ", current_upper_bound, " UB ", calculate_graph_cost(christofides_sol, original_cost_matrix, n))
+            println("min ub ", minimum(upper_bounds))
+            println("max lb ", maximum(lower_bounds))
+            println("min gap ", minimum(gaps))
+            #return optimality_gap, best_lower_bound, best_upper_bound, best_ub_sol, best_lb_sol
+            break
+        end   
 
         if denominator == 0
             println("iteration ", i, " denominator 0 ", optimality_gap, " BLB ", best_lower_bound, " BUB ", best_upper_bound, " CLB ", current_lower_bound, " CUB ", current_upper_bound, " UB ")
