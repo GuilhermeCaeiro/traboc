@@ -100,7 +100,7 @@ function lagrangean_relaxation()
         #mi = epsilon * (current_upper_bound - current_lower_bound) / denominator
         #mi = epsilon * (1.05 * current_upper_bound - current_lower_bound) / denominator
         #mi = epsilon * (best_upper_bound - current_lower_bound) / denominator
-        mi = epsilon * (1.05 * best_upper_bound - current_lower_bound) / denominator
+        mi = epsilon * (1.01 * best_upper_bound - current_lower_bound) / denominator
         u = u + mi * G
 
         #draw(PDF(string("christofides_", i, ".pdf"), 16cm, 16cm), gplot(christofides_sol, nodelabel=1:nv(one_tree_sol)))
