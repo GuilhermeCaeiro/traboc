@@ -143,6 +143,17 @@ function lagrangean_relaxation()
 
         if denominator == 0
             println("iteration ", i, " denominator 0 ", optimality_gap, " BLB ", best_lower_bound, " BUB ", best_upper_bound, " CLB ", current_lower_bound, " CUB ", current_upper_bound, " UB ")
+            # TODO implementar verificacao de viabilidade da solucao
+            feasible = false
+
+            # if the solution is feasible and the denominator is zero, that solution is optimal
+            if feasible
+                println("Optimal solution")
+            else
+                println("Stopping. Yet another lower bound found, but the denominator is zero and the solution is unfeasible.")
+            end
+
+            break
         end
 
         
