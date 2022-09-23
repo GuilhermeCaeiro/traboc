@@ -27,15 +27,15 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, max_iterati
 
     testdata = String(read(testdatafile));
     xml_graph = parsexml(testdata)
-    #original_cost_matrix, n = graph_to_cost_matrix(xml_graph)
-    original_cost_matrix = [
-        0  30 26 50 40 
-        30  0 24 40 50
-        26 24  0 24 26
-        50 40 24  0 30
-        40 50 26 30  0
-    ]
-    n = 5
+    original_cost_matrix, n = graph_to_cost_matrix(xml_graph)
+    #original_cost_matrix = [
+    #    0  30 26 50 40 
+    #    30  0 24 40 50
+    #    26 24  0 24 26
+    #    50 40 24  0 30
+    #    40 50 26 30  0
+    #]
+    #n = 5
 
     #current_cost_matrix = deepcopy(original_cost_matrix)
     u = zeros(1, n)

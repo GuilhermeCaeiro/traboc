@@ -11,3 +11,5 @@ experiment_id,strategy,testdatafile,max_iterations,epsilon
 20220923164657,christofides,aaaa,10000,1.0
 20220923164934,christofides,./input/testcristofides.xml,10000,1.0
 20220923165134,christofides,./input/test_cristofides.xml,10000,1.0
+20220923170453,christofides,./input/test_cristofides.xml,10000,1.0
+20220923170910,christofides,./input/test_cristofides.xml,100000,1.0
