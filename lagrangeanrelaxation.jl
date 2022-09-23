@@ -155,11 +155,6 @@ function lagrangean_relaxation()
 
             break
         end
-
-        
-
-        
-
         #break
     end
 
