@@ -6,3 +6,8 @@ experiment_id,strategy,testdatafile,max_iterations,epsilon
 20220921082104,cristofides,test_cristofides.xml,2,1.0
 20220921082756,cristofides,test_cristofides.xml,2,1.0
 20220921082936,cristofides,test_cristofides.xml,2,1.0
+20220923163903,christofides,aaaa,10000,1.0
+20220923164255,christofides,aaaa,10000,1.0
+20220923164657,christofides,aaaa,10000,1.0
+20220923164934,christofides,./input/testcristofides.xml,10000,1.0
+20220923165134,christofides,./input/test_cristofides.xml,10000,1.0

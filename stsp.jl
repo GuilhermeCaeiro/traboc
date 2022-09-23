@@ -1,11 +1,11 @@
-using JuMP, Gurobi
+using JuMP, GLPK
 
 function integer_problem(instance, n)
     # code from https://github.com/PiotrZakrzewski/julia-tsp/blob/main/TSP.
     # that source is related to https://www.youtube.com/watch?v=IYae_sfzKMs
     # and based on https://co-enzyme.fr/blog/traveling-salesman-problem-tsp-in-cplex-opl-with-miller-tucker-zemlin-mtz-formulation/
 
-    model = Model(Gurobi.Optimizer)
+    model = Model(GLPK.Optimizer)
     # route is an adjence matrix representing a route traveled
     route=@variable(model, route[1:n, 1:n], Bin)
     # mtzu is a helper variable to ensure no subtours are allowed (only one continous tour)
@@ -36,7 +36,7 @@ function integer_problem(instance, n)
 end
 
 function linear_relaxation(instance, n)
-    model = Model(Gurobi.Optimizer)
+    model = Model(GLPK.Optimizer)
     # route is an adjence matrix representing a route traveled
     route=@variable(model, 0 <= route[1:n, 1:n] <= 1)
     # mtzu is a helper variable to ensure no subtours are allowed (only one continous tour)
@@ -67,7 +67,7 @@ end
 
 # discards the subtour removal constraints.
 function ap_linear_relaxation(instance, n)
-    model = Model(Gurobi.Optimizer)
+    model = Model(GLPK.Optimizer)
     # route is an adjence matrix representing a route traveled
     route=@variable(model, 0 <= route[1:n, 1:n] <= 1)
     
@@ -92,7 +92,7 @@ end
 
 # discards the subtour removal constraints.
 function ap_integer_relaxation(instance, n)
-    model = Model(Gurobi.Optimizer)
+    model = Model(GLPK.Optimizer)
     # route is an adjence matrix representing a route traveled
     route=@variable(model, route[1:n, 1:n], Bin)
     
@@ -199,16 +199,25 @@ function one_tree_lagrangean_relaxation(instance, n, one_tree)
 
 end
 
-instance = [
-    0   2   5   6  12  10
-    2   0   3   4  12  12
-    5   3   0   1   9  11
-    6   4   1   0   8  10
-    12 12   9   8   0   2
-    10 12  11  10   2   0
-]
+#instance = [
+#    0   2   5   6  12  10
+#    2   0   3   4  12  12
+#    5   3   0   1   9  11
+#    6   4   1   0   8  10
+#    12 12   9   8   0   2
+#    10 12  11  10   2   0
+#]
+#
+#n = 6
 
-n = 6
+instance = [
+    0  30 26 50 40 
+    30  0 24 40 50
+    26 24  0 24 26
+    50 40 24  0 30
+    40 50 26 30  0
+]
+n = 5
 
 optimal_value = integer_problem(instance, n)
 println(optimal_value)

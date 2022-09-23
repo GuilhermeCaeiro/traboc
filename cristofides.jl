@@ -3,10 +3,6 @@ using EzXML
 using GraphsMatching
 using GraphPlot
 
-#include("utils.jl")
-#include("logs.jl")
-#include("commons.jl")
-
 function calculate_graph_cost(graph, cost_matrix, n)
     graph_cost = 0
     for edge in edges(graph)

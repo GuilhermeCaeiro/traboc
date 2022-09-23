@@ -36,7 +36,7 @@ function main(args)
 
     strategy = args[1]
     testdatafile = args[2]
-    max_iterations = parse(Int16,args[3])
+    max_iterations = parse(Int64,args[3])
     epsilon = parse(Float64,args[4])
 
     show_info("********************************************************************")
@@ -44,7 +44,7 @@ function main(args)
     show_info("********************************************************************")
     show_info("Trabalho para a disciplina de Otimização Combinatória - 2022p2")
     show_info("João Pedro")
-    show_info("Guilherme Caieiros")
+    show_info("Guilherme Caeiro")
     show_info("Victor Xavier")
     show_info("********************************************************************")
     show_info("Exeperimento: ", exp_id)
@@ -57,8 +57,8 @@ function main(args)
     save_step(exp_id,"MAIN","START")
     save_params(exp_id,strategy,testdatafile,max_iterations,epsilon)
 
-    if strategy == "cristofides"
-        lagrangean_relaxation(exp_id,strategy,testdatafile,max_iterations,epsilon)
+    if strategy == "christofides"
+        lagrangean_relaxation(exp_id,testdatafile,max_iterations,epsilon)
     elseif strategy == "gurobi"
         @info "Implementar chamada a solvers aqui..."
     else
