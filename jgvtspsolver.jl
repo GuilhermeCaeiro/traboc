@@ -19,8 +19,8 @@ include("logs.jl")
 include("utils.jl")
 include("lagrangeanrelaxation.jl")
 
-function save_params(exp_id, strategy, testdatafile,max_iterations,epsilon)
-    df = DataFrame([exp_id strategy testdatafile max_iterations epsilon], :auto)
+function save_params(exp_id, strategy, testdatafile, max_iterations, gap_threshold, epsilon, mi_option, check_point)
+    df = DataFrame([exp_id strategy testdatafile max_iterations gap_threshold epsilon mi_option check_point], :auto)
     CSV.write("./work/experiments.csv", df; append=true)
 end
 
@@ -35,9 +35,27 @@ function main(args)
     end 
 
     strategy = args[1]
+    if strategy == "-help"
+        show_info( "jgvtspsolver.jl <christofides|gurobi> <testdatafile> <max_iterations> <gap_threshold> <epsilon> <current|best|5pct|1pct> [<check_point>]" )
+        show_info( "<christofides|gurobi> solver engine to be used in experiment" )
+        show_info( "<testdatafile> path to test data file to be used" )
+        show_info( "<max_iterations> maximn number of iterations" )
+        show_info( "<gap_threshold> gap gap_threshold to be used in lagrangean_relaxation/christofides" )
+        show_info( "<epsilon> epsilon value to be used in lagrangean_relaxation/christofides" )
+        show_info( "<current|best|5pct|1pct> mi_function to be used to calculate mi parameter" )
+        show_info( "[<check_point>] iteration check-point to show progress (default: max_iterations)" )
+        exit()
+    end
+
     testdatafile = args[2]
     max_iterations = parse(Int64,args[3])
-    epsilon = parse(Float64,args[4])
+    gap_threshold = parse(Float64,args[4])
+    epsilon = parse(Float64,args[5])
+    mi_option = args[6]
+    check_point = max_iterations
+    if length(args) > 6
+        check_point = parse(Int64,args[7])
+    end
 
     show_info("********************************************************************")
     show_info("JGV Solver For Travelling Sallesman problem ")
@@ -52,18 +70,23 @@ function main(args)
     show_info("strategy: ", strategy)
     show_info("testdatafile: ", testdatafile)
     show_info("max_iterations: ", max_iterations)
+    show_info("gap_threshold: ", gap_threshold)
     show_info("epsilon: ", epsilon)
+    show_info("mi_function: ", mi_option)
+    show_info("check_point: ", check_point)
 
-    save_step(exp_id,"MAIN","START")
-    save_params(exp_id,strategy,testdatafile,max_iterations,epsilon)
+    save_step(exp_id,"main","start","experiment")
+    save_params(exp_id,strategy,testdatafile,max_iterations,gap_threshold,epsilon,mi_option,check_point)
 
     if strategy == "christofides"
-        lagrangean_relaxation(exp_id,testdatafile,max_iterations,epsilon)
+        lagrangean_relaxation(exp_id,testdatafile,max_iterations,gap_threshold,epsilon,mi_option,check_point)
     elseif strategy == "gurobi"
         @info "Implementar chamada a solvers aqui..."
     else
         @error "Por favor informe uma estratégia de execução válida: cristofides ou solvers"
     end
+
+    save_step(exp_id,"main","finish","experiment")
 
 end
 
