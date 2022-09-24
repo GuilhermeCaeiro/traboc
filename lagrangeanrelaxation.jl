@@ -244,7 +244,7 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, max_iterati
     show_result(exp_id, "lagrangean_relaxation", "iterations ran ", total_iterations)
 
     save_step(exp_id,"lagrangean_relaxation","finish","method")
-
+    return maximum(lower_bounds), minimum(upper_bounds)
 end
 
 #lagrangean_relaxation("1", "", 1000, 1.0)

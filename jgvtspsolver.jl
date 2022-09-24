@@ -18,6 +18,7 @@ include("commons.jl")
 include("logs.jl")
 include("utils.jl")
 include("lagrangeanrelaxation.jl")
+include("lazytsp.jl")
 
 function save_params(exp_id, strategy, testdatafile, max_iterations, gap_threshold, epsilon, mi_option, check_point)
     df = DataFrame([exp_id strategy testdatafile max_iterations gap_threshold epsilon mi_option check_point], :auto)
@@ -81,7 +82,10 @@ function main(args)
     if strategy == "christofides"
         lagrangean_relaxation(exp_id,testdatafile,max_iterations,gap_threshold,epsilon,mi_option,check_point)
     elseif strategy == "gurobi"
-        @info "Implementar chamada a solvers aqui..."
+        lazy(testdatafile)
+    elseif strategy == "lazyandchris"
+        lower, upper = lagrangean_relaxation(exp_id,testdatafile,max_iterations,gap_threshold,epsilon,mi_option,check_point)
+        lazy(testdatafile, lower, upper)
     else
         @error "Por favor informe uma estratégia de execução válida: cristofides ou solvers"
     end

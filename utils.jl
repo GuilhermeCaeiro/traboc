@@ -224,9 +224,9 @@ function count_degree_and_form_subgraph(exp_id, step_id, graph, cost_matrix)
 
     subgc = zeros(nv(subg),nv(subg))
     i = 1
-    while index[i] != 0 && i <= nv(graph)
+    while i <= nv(graph) && index[i] != 0
         j=i+1
-        while index[j] != 0 && j <= nv(graph)
+        while j <= nv(graph) && index[j] != 0
             add_edge!(subg, i, j)
             subgc[i,j] = cost_matrix[index[i],index[j]]
             j+=1
@@ -262,7 +262,7 @@ function min_weight_perfect_matching(exp_id, graph, cost_matrix)
     @debug "min_weight_perfect_matching..."
 
     #prepare weigths parameter
-    w = Dict{Graphs.SimpleGraphs.SimpleEdge{Int64}, Int64}()
+    w = Dict{Graphs.SimpleGraphs.SimpleEdge{Int64}, Float64}()
     for e in edges(graph)
         w[Edge(Int(src(e)),Int(dst(e)))] = cost_matrix[src(e),dst(e)]
     end
