@@ -64,8 +64,13 @@ end
 # n -> number of elements in the graph
 # Returns 
 # new_graph -> complete graph with n nodes
-function create_complete_graph(n)
-    new_graph = SimpleGraph(n)
+function create_complete_graph(n, is_digraph = false)
+    new_graph = undef
+    if is_digraph
+        new_graph = DiGraph(n)
+    else
+        new_graph = SimpleGraph(n)
+    end
 
 	for i in 1:n
 		for j in i+1:n

@@ -59,11 +59,25 @@ function check_hamiltonian_cycle(graph)
     end
 end
 
+
+function factor_2_approximation(cost_matrix, n)
+    graph = create_complete_graph(n)
+    mst, c = minimum_spanning_tree(graph, cost_matrix, n) 
+    # Converting the minimum spanning tree to a digraph.
+    # The duplicated edges are generated during the conversion.
+    dgraph = SimpleDiGraph(mst)
+    ham_cycle_from_euler = euler_path(dgraph)
+    return ham_cycle_from_euler
+end
+
+
+
 function lagrangean_relaxation(exp_id::String, testdatafile::String, max_iterations::Int64, epsilon::Float64)
     save_step(exp_id,"lagrangean_relaxation","START")
 
     upper_bounds = Array{Float64}(undef, 0)
     lower_bounds = Array{Float64}(undef, 0)
+    epsilons = Array{Float64}(undef, 0)
     gaps = Array{Float64}(undef, 0)
 
     current_upper_bound = Inf
@@ -72,6 +86,8 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, max_iterati
     best_lower_bound = -Inf
     best_ub_sol = undef
     best_lb_sol = undef
+    last_upper_bound_update = 0
+    last_lower_boud_update = 0
 
     optimality_gap = Inf
     gap_threshold = 0.00001
@@ -99,9 +115,9 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, max_iterati
 
     save_step(exp_id,"lagrangean_relaxation","ITERATIONS")
 
-    for i = 1:max_iterations
+    for iteration = 1:max_iterations
+        total_iterations = iteration
         # updating cost matrix based on lagrangian multipliers
-        total_iterations = i
         current_cost_matrix = zeros(n, n)
 
         for i in 1:n
@@ -116,11 +132,25 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, max_iterati
 
         @debug "current_cost_matrix " current_cost_matrix
 
-        # getting upper bound, christofides produces feasible solutions
-        christofides_sol = unite_and_hamilton(current_cost_matrix, n)
-        #christofides_sol = unite_and_hamilton(original_cost_matrix, n)
-        #current_upper_bound = calculate_graph_cost(christofides_sol, current_cost_matrix, n) 
-        current_upper_bound = calculate_graph_cost(christofides_sol, original_cost_matrix, n) 
+        #ub_algorithm = "christofides"
+        ub_algorithm = "factor2approximation"
+        ub_solution = undef
+        current_upper_bound = Inf
+
+        # getting upper bound
+        if ub_algorithm == "christofides"
+            # christofides produces feasible solutions
+            ub_solution = unite_and_hamilton(current_cost_matrix, n) 
+        elseif ub_algorithm == "factor2approximation"
+            # factor 2 approximation produces feasible solutions
+            ub_solution = factor_2_approximation(current_cost_matrix, n) 
+        else
+            println("Invalid upper bound algorithm \"$ub_algorithm\".")
+        end
+
+        current_upper_bound = calculate_graph_cost(ub_solution, original_cost_matrix, n)
+
+        
         
 
         #draw(PDF(string("christofides_", i, ".pdf"), 16cm, 16cm), gplot(christofides_sol))
@@ -133,12 +163,14 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, max_iterati
 
         if current_upper_bound < best_upper_bound
             best_upper_bound = current_upper_bound
-            best_ub_sol = christofides_sol
+            best_ub_sol = ub_solution
+            last_upper_bound_update = iteration
         end
 
         if current_lower_bound > best_lower_bound
             best_lower_bound = current_lower_bound
             best_lb_sol = one_tree_sol
+            last_lower_boud_update = iteration 
         end
 
         #println(u)
@@ -162,18 +194,24 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, max_iterati
         push!(gaps, optimality_gap)
         push!(upper_bounds, current_upper_bound)
         push!(lower_bounds, current_lower_bound)
+        push!(epsilons, epsilon)
 
-        if mod(i, 100) == 0
-            print("Iteration ", i, " ")
+
+        if iteration - last_lower_boud_update > 20
+            epsilon = epsilon / 2
+        end
+
+        if mod(iteration, 100) == 0
+            print("Iteration ", iteration, " ")
             print(" ub ", current_upper_bound, " ")
             print(" lb ", current_lower_bound, " ")
             print(" gap ", optimality_gap, " ")
             println(" best boundaries (u/l) ", best_upper_bound, "/", best_lower_bound, " ")
             println("edges_per_vertex ", edges_per_vertex)
             println(" onetree cost on original costs ", calculate_graph_cost(one_tree_sol, original_cost_matrix, n), " ")
-            println(" christofides cost on original costs ", calculate_graph_cost(christofides_sol, original_cost_matrix, n), " ")
+            println(" ub cost on original costs ", calculate_graph_cost(ub_solution, original_cost_matrix, n), " ")
             println(" onetree cost on current costs ", calculate_graph_cost(one_tree_sol, current_cost_matrix, n), " ")
-            println(" christofides cost on current costs ", calculate_graph_cost(christofides_sol, current_cost_matrix, n), " ")
+            println(" ub cost on current costs ", calculate_graph_cost(ub_solution, current_cost_matrix, n), " ")
         end
 
         if optimality_gap == 0
@@ -195,7 +233,7 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, max_iterati
         end   
 
         if denominator == 0
-            println("iteration ", i, " denominator 0 ", optimality_gap, " BLB ", best_lower_bound, " BUB ", best_upper_bound, " CLB ", current_lower_bound, " CUB ", current_upper_bound, " UB ")
+            println("iteration ", iteration, " denominator 0 ", optimality_gap, " BLB ", best_lower_bound, " BUB ", best_upper_bound, " CLB ", current_lower_bound, " CUB ", current_upper_bound, " UB ")
             feasible = check_hamiltonian_cycle(one_tree_sol)
 
             # if the solution is feasible and the denominator is zero, that solution is optimal
@@ -208,7 +246,7 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, max_iterati
             break
         end
         #break
-        save_step(exp_id,"lagrangean_relaxation","IT_$i")
+        save_step(exp_id,"lagrangean_relaxation","IT_$iteration")
 
     end
 

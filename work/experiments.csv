@@ -15,3 +15,15 @@ experiment_id,strategy,testdatafile,max_iterations,epsilon
 20220923170910,christofides,./input/test_cristofides.xml,100000,1.0
 20220924163803,christofides,./input/test_cristofides.xml,1000,1.0
 20220924200000,christofides,./input/test_cristofides.xml,1000,1.0
+20220924201335,christofides,./input/test_cristofides.xml,1000,1.0
+20220924201646,christofides,./input/test_cristofides.xml,1000,1.0
+20220924202000,christofides,./input/test_cristofides.xml,1000,1.0
+20220924202459,christofides,./input/test_cristofides.xml,1000,1.0
+20220924202710,christofides,./input/test_cristofides.xml,1000,1.0
+20220924225540,christofides,./input/test_cristofides.xml,1000,1.0
+20220924231731,christofides,./input/test_cristofides.xml,1000,1.0
+20220924233842,christofides,./input/test_cristofides.xml,1000,1.0
+20220925190708,christofides,./input/test_cristofides.xml,1000,1.0
+20220925191053,christofides,./input/test_cristofides.xml,1000,1.0
+20220925191326,christofides,./input/test_cristofides.xml,1000,1.0
+20220925191811,christofides,./input/test_cristofides.xml,1000,1.0
