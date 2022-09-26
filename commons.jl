@@ -26,6 +26,7 @@ function new_experiment()
 end
 
 function save_step(exp_id,step_id,action,target)
+    return
     moment=now()
     timestamp = Dates.value(moment)
     df = DataFrame([timestamp step_id action target], :auto)
@@ -33,6 +34,7 @@ function save_step(exp_id,step_id,action,target)
 end
 
 function save_result(exp_id,step_id,key,value)
+    return
     moment=now()
     timestamp = Dates.value(moment)
     df = DataFrame([timestamp step_id key value], :auto)

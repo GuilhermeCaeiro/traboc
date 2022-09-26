@@ -29,7 +29,7 @@ function main(args)
  
     exp_id = new_experiment() 
     
-    set_logging(Logging.Debug,exp_id)
+    set_logging(Logging.Info,exp_id)
 
     if length(args) < 3
         @error "Por favor informe os parâmetros para execução: testdatafile max_iterations epsilon"

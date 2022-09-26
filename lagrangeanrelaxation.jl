@@ -42,7 +42,6 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, max_iterati
     best_lb_sol = undef
 
     optimality_gap = Inf
-    #gap_threshold = 0.00001
 
     testdata = String(read(testdatafile));
     xml_graph = parsexml(testdata)
@@ -71,11 +70,11 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, max_iterati
 
     save_step(exp_id,"lagrangean_relaxation:iterations","start","step")
 
-    for i = 1:max_iterations
-        save_step(exp_id,"lagrangean_relaxation:iterations","start","iteration_$i")
+    for iteration = 1:max_iterations
+        save_step(exp_id,"lagrangean_relaxation:iterations","start","iteration_$iteration")
 
         # updating cost matrix based on lagrangian multipliers
-        total_iterations = i
+        total_iterations = iteration
         current_cost_matrix = zeros(n, n)
 
         for i in 1:n
@@ -91,30 +90,29 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, max_iterati
         @debug "current_cost_matrix " current_cost_matrix
 
         # getting upper bound, christofides produces feasible solutions
-        save_step(exp_id,"lagrangean_relaxation:unite_and_hamilton","start","iteration_$i")
-        christofides_sol = unite_and_hamilton(exp_id, i, current_cost_matrix, n)
-        save_step(exp_id,"lagrangean_relaxation:unite_and_hamilton","finish","iteration_$i")
+        save_step(exp_id,"lagrangean_relaxation:unite_and_hamilton","start","iteration_$iteration")
+        christofides_sol = unite_and_hamilton(exp_id, iteration, current_cost_matrix, n)
+        save_step(exp_id,"lagrangean_relaxation:unite_and_hamilton","finish","iteration_$iteration")
 
         #christofides_sol = unite_and_hamilton(original_cost_matrix, n)
         #current_upper_bound = calculate_graph_cost(christofides_sol, current_cost_matrix, n) 
-        save_step(exp_id,"lagrangean_relaxation:calculate_graph_cost:upper_bound","start","iteration_$i")
+        save_step(exp_id,"lagrangean_relaxation:calculate_graph_cost:upper_bound","start","iteration_$iteration")
         current_upper_bound = calculate_graph_cost(christofides_sol, original_cost_matrix, n) 
-        save_step(exp_id,"lagrangean_relaxation:calculate_graph_cost:upper_bound","finish","iteration_$i")
+        save_step(exp_id,"lagrangean_relaxation:calculate_graph_cost:upper_bound","finish","iteration_$iteration")
         
 
-        #draw(PDF(string("christofides_", i, ".pdf"), 16cm, 16cm), gplot(christofides_sol))
+        #draw(PDF(string("christofides_", iteration, ".pdf"), 16cm, 16cm), gplot(christofides_sol))
 
         # getting lower bound
-        save_step(exp_id,"lagrangean_relaxation:one_tree_graph","start","iteration_$i")
-        one_tree_sol = one_tree_graph(exp_id, i, current_cost_matrix, n)
-        save_step(exp_id,"lagrangean_relaxation:one_tree_graph","finish","iteration_$i")
+        save_step(exp_id,"lagrangean_relaxation:one_tree_graph","start","iteration_$iteration")
+        one_tree_sol = one_tree_graph(exp_id, iteration, current_cost_matrix, n)
+        save_step(exp_id,"lagrangean_relaxation:one_tree_graph","finish","iteration_$iteration")
 
-        save_step(exp_id,"lagrangean_relaxation:calculate_graph_cost:lower_bound","start","iteration_$i")
+        save_step(exp_id,"lagrangean_relaxation:calculate_graph_cost:lower_bound","start","iteration_$iteration")
         current_lower_bound = calculate_graph_cost(one_tree_sol, current_cost_matrix, n)
-        save_step(exp_id,"lagrangean_relaxation:calculate_graph_cost:lower_bound","finish","iteration_$i")
-
-        #current_lower_bound = calculate_graph_cost(one_tree_sol, original_cost_matrix, n) 
-        current_lower_bound = current_lower_bound + 2 * (sum(u))# ^ 2)
+        save_step(exp_id,"lagrangean_relaxation:calculate_graph_cost:lower_bound","finish","iteration_$iteration")
+ 
+        current_lower_bound = current_lower_bound + 2 * (sum(u))
 
         if current_upper_bound < best_upper_bound
             best_upper_bound = current_upper_bound
@@ -126,22 +124,22 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, max_iterati
             best_lb_sol = one_tree_sol
         end
 
-        save_result(exp_id, "lagrangean_relaxation:$i", "iteration", i)
-        save_result(exp_id, "lagrangean_relaxation:$i", "upper_bound", best_upper_bound)
-        save_result(exp_id, "lagrangean_relaxation:$i", "lower_bound", best_lower_bound)
-        save_result(exp_id, "lagrangean_relaxation:$i", "upper_bound_sol", best_ub_sol)
-        save_result(exp_id, "lagrangean_relaxation:$i", "lower_bound_sol", best_lb_sol)
+        save_result(exp_id, "lagrangean_relaxation:$iteration", "iteration", iteration)
+        save_result(exp_id, "lagrangean_relaxation:$iteration", "upper_bound", best_upper_bound)
+        save_result(exp_id, "lagrangean_relaxation:$iteration", "lower_bound", best_lower_bound)
+        save_result(exp_id, "lagrangean_relaxation:$iteration", "upper_bound_sol", best_ub_sol)
+        save_result(exp_id, "lagrangean_relaxation:$iteration", "lower_bound_sol", best_lb_sol)
 
         @debug u
 
         #optimality_gap = (current_upper_bound - current_lower_bound) / current_upper_bound
         optimality_gap = (best_upper_bound - best_lower_bound) / best_upper_bound
         
-        save_result(exp_id, "lagrangean_relaxation:$i", "optimality_gap", optimality_gap)
+        save_result(exp_id, "lagrangean_relaxation:$iteration", "optimality_gap", optimality_gap)
 
         # lagrangian vars update
         edges_per_vertex = count_vertex_edges(one_tree_sol, n)
-        save_result(exp_id, "lagrangean_relaxation:$i", "edges_per_vertex", edges_per_vertex)
+        save_result(exp_id, "lagrangean_relaxation:$iteration", "edges_per_vertex", edges_per_vertex)
 
         G = 2 .- edges_per_vertex
         denominator = sum(G .^ 2)
@@ -159,64 +157,64 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, max_iterati
             @error "Mi function option não informada."
         end
 
-        save_result(exp_id, "lagrangean_relaxation:$i", "mi", mi)
+        save_result(exp_id, "lagrangean_relaxation:$iteration", "mi", mi)
 
         u = u + mi * G
 
-        #draw(PDF(string("christofides_", i, ".pdf"), 16cm, 16cm), gplot(christofides_sol, nodelabel=1:nv(one_tree_sol)))
-        #draw(PDF(string("onetree_", i, ".pdf"), 16cm, 16cm), gplot(one_tree_sol, nodelabel=1:nv(one_tree_sol)))
+        #draw(PDF(string("christofides_", iteration, ".pdf"), 16cm, 16cm), gplot(christofides_sol, nodelabel=1:nv(one_tree_sol)))
+        #draw(PDF(string("onetree_", iteration, ".pdf"), 16cm, 16cm), gplot(one_tree_sol, nodelabel=1:nv(one_tree_sol)))
 
         push!(gaps, optimality_gap)
         push!(upper_bounds, current_upper_bound)
         push!(lower_bounds, current_lower_bound)
 
-        if mod(i, check_point) == 0            
-            show_result(exp_id, "lagrangean_relaxation:$i:check_point", "Iteration ", i )
-            show_result(exp_id, "lagrangean_relaxation:$i:check_point", "current_upper_bound", current_upper_bound)
-            show_result(exp_id, "lagrangean_relaxation:$i:check_point", "current_lower_bound", current_lower_bound)
-            show_result(exp_id, "lagrangean_relaxation:$i:check_point", "optimality_gap", optimality_gap)
-            show_result(exp_id, "lagrangean_relaxation:$i:check_point", "best boundaries (upper/lower) ", best_upper_bound/best_lower_bound)
-            show_result(exp_id, "lagrangean_relaxation:$i:check_point", "edges_per_vertex ", edges_per_vertex)
-            show_result(exp_id, "lagrangean_relaxation:$i:check_point", "onetree cost on original costs ", calculate_graph_cost(one_tree_sol, original_cost_matrix, n))
-            show_result(exp_id, "lagrangean_relaxation:$i:check_point", "christofides cost on original costs ", calculate_graph_cost(christofides_sol, original_cost_matrix, n))
-            show_result(exp_id, "lagrangean_relaxation:$i:check_point", "onetree cost on current costs ", calculate_graph_cost(one_tree_sol, current_cost_matrix, n))
-            show_result(exp_id, "lagrangean_relaxation:$i:check_point", "christofides cost on current costs ", calculate_graph_cost(christofides_sol, current_cost_matrix, n))
+        if mod(iteration, check_point) == 0            
+            show_result(exp_id, "lagrangean_relaxation:$iteration:check_point", "Iteration ", iteration)
+            show_result(exp_id, "lagrangean_relaxation:$iteration:check_point", "current_upper_bound", current_upper_bound)
+            show_result(exp_id, "lagrangean_relaxation:$iteration:check_point", "current_lower_bound", current_lower_bound)
+            show_result(exp_id, "lagrangean_relaxation:$iteration:check_point", "optimality_gap", optimality_gap)
+            #show_result(exp_id, "lagrangean_relaxation:$iteration:check_point", "best boundaries (upper/lower) ", string(best_upper_bound) + " / " + string(best_lower_bound))
+            show_result(exp_id, "lagrangean_relaxation:$iteration:check_point", "edges_per_vertex ", edges_per_vertex)
+            show_result(exp_id, "lagrangean_relaxation:$iteration:check_point", "onetree cost on original costs ", calculate_graph_cost(one_tree_sol, original_cost_matrix, n))
+            show_result(exp_id, "lagrangean_relaxation:$iteration:check_point", "christofides cost on original costs ", calculate_graph_cost(christofides_sol, original_cost_matrix, n))
+            show_result(exp_id, "lagrangean_relaxation:$iteration:check_point", "onetree cost on current costs ", calculate_graph_cost(one_tree_sol, current_cost_matrix, n))
+            show_result(exp_id, "lagrangean_relaxation:$iteration:check_point", "christofides cost on current costs ", calculate_graph_cost(christofides_sol, current_cost_matrix, n))
         end
 
         if optimality_gap == 0
-            show_result(exp_id, "lagrangean_relaxation:$i:optimal_sol", "optimal_sol", "true" )
-            show_result(exp_id, "lagrangean_relaxation:$i:optimal_sol", "optimality_gap", 0 )
-            show_result(exp_id, "lagrangean_relaxation:$i:optimal_sol", "best_lower_bound", best_lower_bound)
-            show_result(exp_id, "lagrangean_relaxation:$i:optimal_sol", "best_upper_bound", best_upper_bound)
-            show_result(exp_id, "lagrangean_relaxation:$i:optimal_sol", "current_lower_bound", current_lower_bound)
-            show_result(exp_id, "lagrangean_relaxation:$i:optimal_sol", "current_upper_bound", current_upper_bound)
-            show_result(exp_id, "lagrangean_relaxation:$i:optimal_sol", "graph_cost", calculate_graph_cost(christofides_sol, original_cost_matrix, n))
-            show_result(exp_id, "lagrangean_relaxation:$i:optimal_sol", "min ub ", minimum(upper_bounds))
-            show_result(exp_id, "lagrangean_relaxation:$i:optimal_sol", "max lb ", maximum(lower_bounds))
-            show_result(exp_id, "lagrangean_relaxation:$i:optimal_sol", "min gap ", minimum(gaps))
+            show_result(exp_id, "lagrangean_relaxation:$iteration:optimal_sol", "optimal_sol", "true" )
+            show_result(exp_id, "lagrangean_relaxation:$iteration:optimal_sol", "optimality_gap", 0 )
+            show_result(exp_id, "lagrangean_relaxation:$iteration:optimal_sol", "best_lower_bound", best_lower_bound)
+            show_result(exp_id, "lagrangean_relaxation:$iteration:optimal_sol", "best_upper_bound", best_upper_bound)
+            show_result(exp_id, "lagrangean_relaxation:$iteration:optimal_sol", "current_lower_bound", current_lower_bound)
+            show_result(exp_id, "lagrangean_relaxation:$iteration:optimal_sol", "current_upper_bound", current_upper_bound)
+            show_result(exp_id, "lagrangean_relaxation:$iteration:optimal_sol", "graph_cost", calculate_graph_cost(christofides_sol, original_cost_matrix, n))
+            show_result(exp_id, "lagrangean_relaxation:$iteration:optimal_sol", "min ub ", minimum(upper_bounds))
+            show_result(exp_id, "lagrangean_relaxation:$iteration:optimal_sol", "max lb ", maximum(lower_bounds))
+            show_result(exp_id, "lagrangean_relaxation:$iteration:optimal_sol", "min gap ", minimum(gaps))
             #return optimality_gap, best_lower_bound, best_upper_bound, best_ub_sol, best_lb_sol
             break
         end
 
         if optimality_gap <= gap_threshold
-            show_result(exp_id, "lagrangean_relaxation:$i:acceptable_sol", "optimal_sol", "false" )
-            show_result(exp_id, "lagrangean_relaxation:$i:acceptable_sol", "optimality_gap", optimality_gap )
-            show_result(exp_id, "lagrangean_relaxation:$i:acceptable_sol", "best_lower_bound", best_lower_bound)
-            show_result(exp_id, "lagrangean_relaxation:$i:acceptable_sol", "best_upper_bound", best_upper_bound)
-            show_result(exp_id, "lagrangean_relaxation:$i:acceptable_sol", "current_lower_bound", current_lower_bound)
-            show_result(exp_id, "lagrangean_relaxation:$i:acceptable_sol", "current_upper_bound", current_upper_bound)
-            show_result(exp_id, "lagrangean_relaxation:$i:acceptable_sol", "graph_cost", calculate_graph_cost(christofides_sol, original_cost_matrix, n))
-            show_result(exp_id, "lagrangean_relaxation:$i:acceptable_sol", "min ub ", minimum(upper_bounds))
-            show_result(exp_id, "lagrangean_relaxation:$i:acceptable_sol", "max lb ", maximum(lower_bounds))
-            show_result(exp_id, "lagrangean_relaxation:$i:acceptable_sol", "min gap ", minimum(gaps))
+            show_result(exp_id, "lagrangean_relaxation:$iteration:acceptable_sol", "optimal_sol", "false" )
+            show_result(exp_id, "lagrangean_relaxation:$iteration:acceptable_sol", "optimality_gap", optimality_gap )
+            show_result(exp_id, "lagrangean_relaxation:$iteration:acceptable_sol", "best_lower_bound", best_lower_bound)
+            show_result(exp_id, "lagrangean_relaxation:$iteration:acceptable_sol", "best_upper_bound", best_upper_bound)
+            show_result(exp_id, "lagrangean_relaxation:$iteration:acceptable_sol", "current_lower_bound", current_lower_bound)
+            show_result(exp_id, "lagrangean_relaxation:$iteration:acceptable_sol", "current_upper_bound", current_upper_bound)
+            show_result(exp_id, "lagrangean_relaxation:$iteration:acceptable_sol", "graph_cost", calculate_graph_cost(christofides_sol, original_cost_matrix, n))
+            show_result(exp_id, "lagrangean_relaxation:$iteration:acceptable_sol", "min ub ", minimum(upper_bounds))
+            show_result(exp_id, "lagrangean_relaxation:$iteration:acceptable_sol", "max lb ", maximum(lower_bounds))
+            show_result(exp_id, "lagrangean_relaxation:$iteration:acceptable_sol", "min gap ", minimum(gaps))
             #return optimality_gap, best_lower_bound, best_upper_bound, best_ub_sol, best_lb_sol
             break
         end   
 
         if denominator == 0
-            println("iteration ", i, " denominator 0 ", optimality_gap, " BLB ", best_lower_bound, " BUB ", best_upper_bound, " CLB ", current_lower_bound, " CUB ", current_upper_bound, " UB ")
-            # TODO implementar verificacao de viabilidade da solucao
-            feasible = false
+            println("iteration ", iteration, " denominator 0 ", optimality_gap, " BLB ", best_lower_bound, " BUB ", best_upper_bound, " CLB ", current_lower_bound, " CUB ", current_upper_bound, " UB ")
+            
+            feasible = check_hamiltonian_cycle(one_tree_sol)
 
             # if the solution is feasible and the denominator is zero, that solution is optimal
             if feasible
@@ -228,7 +226,7 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, max_iterati
             break
         end
         #break
-        save_step(exp_id,"lagrangean_relaxation:iterations","finish","iteration_$i")
+        save_step(exp_id,"lagrangean_relaxation:iterations","finish","iteration_$iteration")
 
     end
 

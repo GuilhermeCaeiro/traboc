@@ -369,3 +369,54 @@ function euler_path(exp_id, step_id, graph)
 
     return path
 end
+
+# Function to check if a graph consitutes a hamiltonian cycle.
+# It assumes that the graph provided is symatric and connected.
+# 
+# Parameters
+# graph -> a symetric SimpleGraph object
+# Returns
+# true if a hamiltonian cycle, or false otherwise
+function check_hamiltonian_cycle(graph)
+    nodes_checked = 0
+    number_of_nodes = nv(graph)
+    number_of_edges = ne(graph)
+    previous_node = 0
+    starting_node = 1
+    next_node = starting_node
+
+    # if there are only 2 nodes, there is no hamiltonian cycle
+    if number_of_nodes <= 2
+        #println("Two or less nodes.")
+        return false
+    end
+
+    # attempts to follow a cycle where nodes_checked shout be equal number_of_nodes
+    while true
+        node = next_node
+        node_degree = degree(graph, node)
+        # all nodes must have degree == 2
+        if node_degree != 2
+            #println("Degree other than 2: node $node, degree $node_degree")
+            return false
+        end
+
+        neighbor_nodes = neighbors(graph, node)
+        next_node = deleteat!(neighbor_nodes, findall(x->x==previous_node, neighbor_nodes))[1] # probably inneficient, but there are only two values
+
+        nodes_checked += 1
+        previous_node = node
+
+        if next_node == starting_node
+            break
+        end
+    end
+
+    #println(number_of_nodes, " ", nodes_checked)
+
+    if number_of_nodes == nodes_checked
+        return true
+    else
+        return false
+    end
+end
