@@ -44,6 +44,9 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, ub_algorith
 
     optimality_gap = Inf
 
+    last_lower_boud_update = 0
+    epsilon_min = 0.0001
+
     testdata = String(read(testdatafile));
     xml_graph = parsexml(testdata)
     
@@ -153,6 +156,7 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, ub_algorith
         if current_lower_bound > best_lower_bound
             best_lower_bound = current_lower_bound
             best_lb_sol = one_tree_sol
+            last_lower_boud_update = iteration
         end
 
         save_result(exp_id, "lagrangean_relaxation:$iteration", "iteration", iteration)
@@ -198,6 +202,15 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, ub_algorith
         push!(gaps, optimality_gap)
         push!(upper_bounds, current_upper_bound)
         push!(lower_bounds, current_lower_bound)
+
+        if (iteration - last_lower_boud_update) > (max_iterations / 20)
+            epsilon = epsilon / 2
+
+            if epsilon < epsilon_min
+                println("Stopping. epsilon < epsilon_min")
+                break
+            end
+        end
 
         if mod(iteration, check_point) == 0            
             show_result(exp_id, "lagrangean_relaxation:$iteration:check_point", "Iteration ", iteration)
@@ -256,6 +269,12 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, ub_algorith
 
             break
         end
+
+        if mi < epsilon_min
+            println("Stopping. mi < epsilon_min.")
+            break
+        end
+
         #break
         save_step(exp_id,"lagrangean_relaxation:iterations","finish","iteration_$iteration")
 
