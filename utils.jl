@@ -261,6 +261,10 @@ function min_weight_perfect_matching(exp_id, graph, cost_matrix)
 
     @debug "min_weight_perfect_matching..."
 
+    if length(edges(graph)) <= 1
+        return graph
+    end
+
     #prepare weigths parameter
     w = Dict{Graphs.SimpleGraphs.SimpleEdge{Int64}, Float64}()
     for e in edges(graph)
