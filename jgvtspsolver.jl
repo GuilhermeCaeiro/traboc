@@ -79,12 +79,12 @@ function main(args)
     save_step(exp_id,"main","start","experiment")
     save_params(exp_id,strategy,testdatafile,max_iterations,gap_threshold,epsilon,mi_option,check_point)
 
-    if strategy == "christofides"
-        lagrangean_relaxation(exp_id,testdatafile,max_iterations,gap_threshold,epsilon,mi_option,check_point)
+    if strategy in ["christofides", "factor2approximation", "christofidesandfactor2"]
+        lagrangean_relaxation(exp_id, testdatafile, strategy, max_iterations, gap_threshold, epsilon, mi_option, check_point)
     elseif strategy == "gurobi"
         lazy(testdatafile)
     elseif strategy == "lazyandchris"
-        lower, upper = lagrangean_relaxation(exp_id,testdatafile,max_iterations,gap_threshold,epsilon,mi_option,check_point)
+        lower, upper = lagrangean_relaxation(exp_id, testdatafile, "christofides", max_iterations, gap_threshold, epsilon, mi_option, check_point)
         lazy(testdatafile, lower, upper)
     else
         @error "Por favor informe uma estratégia de execução válida: cristofides ou solvers"
