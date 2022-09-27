@@ -185,7 +185,7 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, ub_algorith
         elseif mi_option == "best"
             mi = epsilon * (best_upper_bound - current_lower_bound) / denominator
         elseif mi_option == "5pct"
-            mi = epsilon * (1.05 * current_upper_bound - current_lower_bound) / denominator
+            mi = epsilon * (1.05 * best_upper_bound - current_lower_bound) / denominator
         elseif mi_option == "1pct"
             mi = epsilon * (1.01 * best_upper_bound - current_lower_bound) / denominator
         else
