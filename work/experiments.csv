@@ -38,3 +38,8 @@ experiment_id,strategy,testdatafile,max_iterations,gap_threshold,epsilon,mi_opti
 20220926004706,christofides,./input/burma14.xml,1000,1.0e-5,1.0,1pct,100
 20220926005252,factor2approximation,./input/burma14.xml,1000,1.0e-5,1.0,1pct,100
 20220926010052,christofides,./input/burma14.xml,1000,1.0e-5,1.0,1pct,100
+20220927113705,christofides,./input/burma14.xml,1000,1.0e-5,1.0,1pct,1000
+20220927125452,christofides,./input/burma14.xml,1000,1.0e-5,1.0,1pct,100
+20220927134854,christofides,./input/burma14.xml,1000,1.0e-5,1.0,1pct,100
+20220927135624,christofides,./input/burma14.xml,1000,1.0e-5,1.0,1pct,100
+20220927140342,christofides,./input/burma14.xml,1000,1.0e-5,1.0,1pct,100

@@ -27,7 +27,7 @@ include("onetree.jl")
 # mi_option -> mi function option
 # Returns 
 # void
-function lagrangean_relaxation(exp_id::String, testdatafile::String, ub_algorithm::String, max_iterations::Int64, gap_threshold::Float64, epsilon::Float64, mi_option::String, check_point::Int64)
+function lagrangean_relaxation(exp_id::String, testdatafile::String, ub_algorithm::String, max_iterations::Int64, gap_threshold::Float64, epsilon::Float64, mi_option::String, epsilon_strategy::String, check_point::Int64)
 
     save_step(exp_id,"lagrangean_relaxation","start","method")
 
@@ -216,6 +216,8 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, ub_algorith
             show_result(exp_id, "lagrangean_relaxation:$iteration:check_point", "Iteration ", iteration)
             show_result(exp_id, "lagrangean_relaxation:$iteration:check_point", "current_upper_bound", current_upper_bound)
             show_result(exp_id, "lagrangean_relaxation:$iteration:check_point", "current_lower_bound", current_lower_bound)
+            show_result(exp_id, "lagrangean_relaxation:$iteration:check_point", "epsilon_strategy", epsilon_strategy)
+            show_result(exp_id, "lagrangean_relaxation:$iteration:check_point", "epsilon", epsilon)
             show_result(exp_id, "lagrangean_relaxation:$iteration:check_point", "optimality_gap", optimality_gap)
             #show_result(exp_id, "lagrangean_relaxation:$iteration:check_point", "best boundaries (upper/lower) ", string(best_upper_bound) + " / " + string(best_lower_bound))
             show_result(exp_id, "lagrangean_relaxation:$iteration:check_point", "edges_per_vertex ", edges_per_vertex)
@@ -232,6 +234,8 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, ub_algorith
             show_result(exp_id, "lagrangean_relaxation:$iteration:optimal_sol", "best_upper_bound", best_upper_bound)
             show_result(exp_id, "lagrangean_relaxation:$iteration:optimal_sol", "current_lower_bound", current_lower_bound)
             show_result(exp_id, "lagrangean_relaxation:$iteration:optimal_sol", "current_upper_bound", current_upper_bound)
+            show_result(exp_id, "lagrangean_relaxation:$iteration:optimal_sol", "epsilon_strategy", epsilon_strategy)
+            show_result(exp_id, "lagrangean_relaxation:$iteration:optimal_sol", "epsilon", epsilon)
             show_result(exp_id, "lagrangean_relaxation:$iteration:optimal_sol", "graph_cost", calculate_graph_cost(ub_solution, original_cost_matrix, n))
             show_result(exp_id, "lagrangean_relaxation:$iteration:optimal_sol", "min ub ", minimum(upper_bounds))
             show_result(exp_id, "lagrangean_relaxation:$iteration:optimal_sol", "max lb ", maximum(lower_bounds))
@@ -247,6 +251,8 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, ub_algorith
             show_result(exp_id, "lagrangean_relaxation:$iteration:acceptable_sol", "best_upper_bound", best_upper_bound)
             show_result(exp_id, "lagrangean_relaxation:$iteration:acceptable_sol", "current_lower_bound", current_lower_bound)
             show_result(exp_id, "lagrangean_relaxation:$iteration:acceptable_sol", "current_upper_bound", current_upper_bound)
+            show_result(exp_id, "lagrangean_relaxation:$iteration:acceptable_sol", "epsilon_strategy", epsilon_strategy)
+            show_result(exp_id, "lagrangean_relaxation:$iteration:acceptable_sol", "epsilon", epsilon)
             show_result(exp_id, "lagrangean_relaxation:$iteration:acceptable_sol", "graph_cost", calculate_graph_cost(ub_solution, original_cost_matrix, n))
             show_result(exp_id, "lagrangean_relaxation:$iteration:acceptable_sol", "min ub ", minimum(upper_bounds))
             show_result(exp_id, "lagrangean_relaxation:$iteration:acceptable_sol", "max lb ", maximum(lower_bounds))
@@ -270,11 +276,23 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, ub_algorith
             break
         end
 
-        if mi < epsilon_min
-            println("Stopping. mi < epsilon_min.")
+        # updating epsilon
+        if epsilon_strategy == "static"
+            # does nothing, because static means 1 * epsilon
+        elseif epsilon_strategy == "lbdecay"
+            if mi < epsilon_min
+                println("Stopping. mi < epsilon_min.")
+                break
+            end
+        elseif epsilon_strategy == "itdecay"
+            epsilon = epsilon * 0.999 #0.9999999
+        elseif epsilon_strategy == "itincrease"
+            epsilon = epsilon * 1.001 #1.0000001
+        else
+            println("Invalid epsilon strategy \"$epsilon_strategy\".")
             break
         end
-
+        
         #break
         save_step(exp_id,"lagrangean_relaxation:iterations","finish","iteration_$iteration")
 
