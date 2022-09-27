@@ -203,14 +203,7 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, ub_algorith
         push!(upper_bounds, current_upper_bound)
         push!(lower_bounds, current_lower_bound)
 
-        if (iteration - last_lower_boud_update) > (max_iterations / 20)
-            epsilon = epsilon / 2
-
-            if epsilon < epsilon_min
-                println("Stopping. epsilon < epsilon_min")
-                break
-            end
-        end
+        
 
         if mod(iteration, check_point) == 0            
             show_result(exp_id, "lagrangean_relaxation:$iteration:check_point", "Iteration ", iteration)
@@ -280,9 +273,13 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, ub_algorith
         if epsilon_strategy == "static"
             # does nothing, because static means 1 * epsilon
         elseif epsilon_strategy == "lbdecay"
-            if mi < epsilon_min
-                println("Stopping. mi < epsilon_min.")
-                break
+            if (iteration - last_lower_boud_update) > (max_iterations / 20)
+                epsilon = epsilon / 2
+    
+                if epsilon < epsilon_min
+                    println("Stopping. epsilon < epsilon_min")
+                    break
+                end
             end
         elseif epsilon_strategy == "itdecay"
             epsilon = epsilon * 0.999 #0.9999999
@@ -290,6 +287,11 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, ub_algorith
             epsilon = epsilon * 1.001 #1.0000001
         else
             println("Invalid epsilon strategy \"$epsilon_strategy\".")
+            break
+        end
+
+        if mi < epsilon_min
+            println("Stopping. mi < epsilon_min.")
             break
         end
         
