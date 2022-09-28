@@ -47,6 +47,8 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, ub_algorith
     last_lower_boud_update = 0
     epsilon_min = 0.0001
 
+    iteration_data = undef
+
     testdata = String(read(testdatafile));
     xml_graph = parsexml(testdata)
     
@@ -71,11 +73,13 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, ub_algorith
     #current_upper_bound = calculate_graph_cost(christofides_sol, original_cost_matrix, n) 
 
     total_iterations = 0
+    experiment_start_time = get_time_in_ms()
 
     save_step(exp_id,"lagrangean_relaxation:iterations","start","step")
 
     for iteration = 1:max_iterations
         save_step(exp_id,"lagrangean_relaxation:iterations","start","iteration_$iteration")
+        iteration_start_time = get_time_in_ms()
 
         # updating cost matrix based on lagrangian multipliers
         total_iterations = iteration
@@ -146,7 +150,7 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, ub_algorith
         current_lower_bound = calculate_graph_cost(one_tree_sol, current_cost_matrix, n)
         save_step(exp_id,"lagrangean_relaxation:calculate_graph_cost:lower_bound","finish","iteration_$iteration")
  
-        current_lower_bound = current_lower_bound + 2 * (sum(u))
+        current_lower_bound = current_lower_bound + 2 * sum(u)
 
         if current_upper_bound < best_upper_bound
             best_upper_bound = current_upper_bound
@@ -159,22 +163,22 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, ub_algorith
             last_lower_boud_update = iteration
         end
 
-        save_result(exp_id, "lagrangean_relaxation:$iteration", "iteration", iteration)
-        save_result(exp_id, "lagrangean_relaxation:$iteration", "upper_bound", best_upper_bound)
-        save_result(exp_id, "lagrangean_relaxation:$iteration", "lower_bound", best_lower_bound)
-        save_result(exp_id, "lagrangean_relaxation:$iteration", "upper_bound_sol", best_ub_sol)
-        save_result(exp_id, "lagrangean_relaxation:$iteration", "lower_bound_sol", best_lb_sol)
+        #save_result(exp_id, "lagrangean_relaxation:$iteration", "iteration", iteration)
+        #save_result(exp_id, "lagrangean_relaxation:$iteration", "upper_bound", best_upper_bound)
+        #save_result(exp_id, "lagrangean_relaxation:$iteration", "lower_bound", best_lower_bound)
+        #save_result(exp_id, "lagrangean_relaxation:$iteration", "upper_bound_sol", best_ub_sol)
+        #save_result(exp_id, "lagrangean_relaxation:$iteration", "lower_bound_sol", best_lb_sol)
 
-        @debug u
+        #@debug u
 
         #optimality_gap = (current_upper_bound - current_lower_bound) / current_upper_bound
         optimality_gap = (best_upper_bound - best_lower_bound) / best_upper_bound
         
-        save_result(exp_id, "lagrangean_relaxation:$iteration", "optimality_gap", optimality_gap)
+        #save_result(exp_id, "lagrangean_relaxation:$iteration", "optimality_gap", optimality_gap)
 
         # lagrangian vars update
         edges_per_vertex = count_vertex_edges(one_tree_sol, n)
-        save_result(exp_id, "lagrangean_relaxation:$iteration", "edges_per_vertex", edges_per_vertex)
+        #save_result(exp_id, "lagrangean_relaxation:$iteration", "edges_per_vertex", edges_per_vertex)
 
         G = 2 .- edges_per_vertex
         denominator = sum(G .^ 2)
@@ -203,69 +207,75 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, ub_algorith
         push!(upper_bounds, current_upper_bound)
         push!(lower_bounds, current_lower_bound)
 
-        
+        iteration_finish_time = get_time_in_ms()
 
-        if mod(iteration, check_point) == 0            
-            show_result(exp_id, "lagrangean_relaxation:$iteration:check_point", "Iteration ", iteration)
-            show_result(exp_id, "lagrangean_relaxation:$iteration:check_point", "current_upper_bound", current_upper_bound)
-            show_result(exp_id, "lagrangean_relaxation:$iteration:check_point", "current_lower_bound", current_lower_bound)
-            show_result(exp_id, "lagrangean_relaxation:$iteration:check_point", "epsilon_strategy", epsilon_strategy)
-            show_result(exp_id, "lagrangean_relaxation:$iteration:check_point", "epsilon", epsilon)
-            show_result(exp_id, "lagrangean_relaxation:$iteration:check_point", "optimality_gap", optimality_gap)
-            #show_result(exp_id, "lagrangean_relaxation:$iteration:check_point", "best boundaries (upper/lower) ", string(best_upper_bound) + " / " + string(best_lower_bound))
-            show_result(exp_id, "lagrangean_relaxation:$iteration:check_point", "edges_per_vertex ", edges_per_vertex)
-            show_result(exp_id, "lagrangean_relaxation:$iteration:check_point", "onetree cost on original costs ", calculate_graph_cost(one_tree_sol, original_cost_matrix, n))
-            show_result(exp_id, "lagrangean_relaxation:$iteration:check_point", "christofides cost on original costs ", calculate_graph_cost(ub_solution, original_cost_matrix, n))
-            show_result(exp_id, "lagrangean_relaxation:$iteration:check_point", "onetree cost on current costs ", calculate_graph_cost(one_tree_sol, current_cost_matrix, n))
-            show_result(exp_id, "lagrangean_relaxation:$iteration:check_point", "christofides cost on current costs ", calculate_graph_cost(ub_solution, current_cost_matrix, n))
-        end
+        iteration_data = Dict(
+            "iteration" => iteration,
+            "current_upper_bound" => current_upper_bound,
+            "current_lower_bound" => current_lower_bound,
+            "best_lower_bound" => best_lower_bound,
+            "best_upper_bound" => best_upper_bound,
+            "epsilon_strategy" => epsilon_strategy,
+            "epsilon" => epsilon,
+            "optimality_gap" => optimality_gap,
+            "experiment_id" => exp_id,
+            "instance" => testdatafile,
+            "upper_bound_algorithm" => ub_algorithm,
+            "max_iterations" => max_iterations,
+            "gap_threshold" => gap_threshold,
+            "mi_option" => mi_option, 
+            "mi" => mi,
+            "u" => u,
+            "is_optimal" => false,
+            "stop_condition" => "",
+            "iteration_start_time" => iteration_start_time,
+            "iteration_finish_time" => iteration_finish_time,
+            "total_iteration_time" => iteration_finish_time - iteration_start_time,
+            "experiment_start_time" => experiment_start_time,
+            "experiment_finish_time" => undef,
+            "total_experiment_time" => undef
+        )
 
+        # stopping criteria
         if optimality_gap == 0
-            show_result(exp_id, "lagrangean_relaxation:$iteration:optimal_sol", "optimal_sol", "true" )
-            show_result(exp_id, "lagrangean_relaxation:$iteration:optimal_sol", "optimality_gap", 0 )
-            show_result(exp_id, "lagrangean_relaxation:$iteration:optimal_sol", "best_lower_bound", best_lower_bound)
-            show_result(exp_id, "lagrangean_relaxation:$iteration:optimal_sol", "best_upper_bound", best_upper_bound)
-            show_result(exp_id, "lagrangean_relaxation:$iteration:optimal_sol", "current_lower_bound", current_lower_bound)
-            show_result(exp_id, "lagrangean_relaxation:$iteration:optimal_sol", "current_upper_bound", current_upper_bound)
-            show_result(exp_id, "lagrangean_relaxation:$iteration:optimal_sol", "epsilon_strategy", epsilon_strategy)
-            show_result(exp_id, "lagrangean_relaxation:$iteration:optimal_sol", "epsilon", epsilon)
-            show_result(exp_id, "lagrangean_relaxation:$iteration:optimal_sol", "graph_cost", calculate_graph_cost(ub_solution, original_cost_matrix, n))
-            show_result(exp_id, "lagrangean_relaxation:$iteration:optimal_sol", "min ub ", minimum(upper_bounds))
-            show_result(exp_id, "lagrangean_relaxation:$iteration:optimal_sol", "max lb ", maximum(lower_bounds))
-            show_result(exp_id, "lagrangean_relaxation:$iteration:optimal_sol", "min gap ", minimum(gaps))
-            #return optimality_gap, best_lower_bound, best_upper_bound, best_ub_sol, best_lb_sol
-            break
-        end
-
-        if optimality_gap <= gap_threshold
-            show_result(exp_id, "lagrangean_relaxation:$iteration:acceptable_sol", "optimal_sol", "false" )
-            show_result(exp_id, "lagrangean_relaxation:$iteration:acceptable_sol", "optimality_gap", optimality_gap )
-            show_result(exp_id, "lagrangean_relaxation:$iteration:acceptable_sol", "best_lower_bound", best_lower_bound)
-            show_result(exp_id, "lagrangean_relaxation:$iteration:acceptable_sol", "best_upper_bound", best_upper_bound)
-            show_result(exp_id, "lagrangean_relaxation:$iteration:acceptable_sol", "current_lower_bound", current_lower_bound)
-            show_result(exp_id, "lagrangean_relaxation:$iteration:acceptable_sol", "current_upper_bound", current_upper_bound)
-            show_result(exp_id, "lagrangean_relaxation:$iteration:acceptable_sol", "epsilon_strategy", epsilon_strategy)
-            show_result(exp_id, "lagrangean_relaxation:$iteration:acceptable_sol", "epsilon", epsilon)
-            show_result(exp_id, "lagrangean_relaxation:$iteration:acceptable_sol", "graph_cost", calculate_graph_cost(ub_solution, original_cost_matrix, n))
-            show_result(exp_id, "lagrangean_relaxation:$iteration:acceptable_sol", "min ub ", minimum(upper_bounds))
-            show_result(exp_id, "lagrangean_relaxation:$iteration:acceptable_sol", "max lb ", maximum(lower_bounds))
-            show_result(exp_id, "lagrangean_relaxation:$iteration:acceptable_sol", "min gap ", minimum(gaps))
-            #return optimality_gap, best_lower_bound, best_upper_bound, best_ub_sol, best_lb_sol
-            break
-        end   
-
-        if denominator == 0
-            println("iteration ", iteration, " denominator 0 ", optimality_gap, " BLB ", best_lower_bound, " BUB ", best_upper_bound, " CLB ", current_lower_bound, " CUB ", current_upper_bound, " UB ")
-            
+            iteration_data["is_optimal"] = true
+            iteration_data["stop_condition"] = "Optimal solution found. UB = LB."
+        elseif optimality_gap <= gap_threshold
+            iteration_data["is_optimal"] = true
+            iteration_data["stop_condition"] = "Acceptable solution found. Gap threshold reached."
+        elseif denominator == 0
             feasible = check_hamiltonian_cycle(one_tree_sol)
 
             # if the solution is feasible and the denominator is zero, that solution is optimal
             if feasible
-                println("Optimal solution")
+                iteration_data["is_optimal"] = true
+                iteration_data["stop_condition"] = "Optimal solution found. The denominator do the subgradient is zero and the solution is feasible."
             else
-                println("Stopping. Yet another lower bound found, but the denominator is zero and the solution is unfeasible.")
+                iteration_data["is_optimal"] = false
+                iteration_data["stop_condition"] = "Lower bound found. Gap threshold reached. The denominator do the subgradient is zero, but the solution is unfeasible."
             end
+        elseif mi < epsilon_min
+            iteration_data["stop_condition"] = "Lower bound found. mi < epsilon_min."
+        elseif iteration == max_iterations
+            iteration_data["stop_condition"] = "Maximum number of iterations reached"
+        end
 
+        stop_iterating = false
+        if iteration_data["stop_condition"] != ""
+            stop_iterating = true
+            iteration_data["experiment_finish_time"] = iteration_finish_time
+            iteration_data["total_experiment_time"] = iteration_finish_time - experiment_start_time
+        end
+
+        print_iteration_data(
+            iteration_data, 
+            cli_only_checkpoint = true, 
+            checkpoint = check_point, 
+            to_csv = true, 
+            output_csv = string("./work/", exp_id, "/experiment_iterations.csv")
+        )
+
+        if stop_iterating
             break
         end
 
@@ -276,10 +286,10 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, ub_algorith
             if (iteration - last_lower_boud_update) > (max_iterations / 20)
                 epsilon = epsilon / 2
     
-                if epsilon < epsilon_min
-                    println("Stopping. epsilon < epsilon_min")
-                    break
-                end
+                #if epsilon < epsilon_min
+                #    println("Stopping. epsilon < epsilon_min")
+                #    break
+                #end
             end
         elseif epsilon_strategy == "itdecay"
             epsilon = epsilon * 0.999 #0.9999999
@@ -287,11 +297,6 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, ub_algorith
             epsilon = epsilon * 1.001 #1.0000001
         else
             println("Invalid epsilon strategy \"$epsilon_strategy\".")
-            break
-        end
-
-        if mi < epsilon_min
-            println("Stopping. mi < epsilon_min.")
             break
         end
         

@@ -14,6 +14,10 @@ function get_ISODateTime()
     return Dates.format(local_datatime, "yyyymmddHHMMSS")
 end
 
+function get_time_in_ms()
+    return convert(Dates.Millisecond, Dates.now())
+end
+
 function new_experiment()
     exp_id = get_ISODateTime()
     #println(exp_id)
@@ -44,4 +48,81 @@ end
 function show_result(exp_id,step_id,key,value)
     show_info(string(key,value),"")
     save_result(exp_id,step_id,key,value)
+end
+
+function format_cli_print(data_dict)
+    iteration = data_dict["iteration"]
+    template = "#################### Iteration $iteration ####################\n[DATA]############################################################\n"
+    data = ""
+
+    for key in sort(collect(keys(data_dict)))
+        if key != "iteration"
+            value = data_dict[key]
+            line = "$key: $value\n"
+            data = data * line
+        end
+    end
+
+    #println(template)
+    #println(data)
+
+    template = replace(template, "[DATA]" => data)
+
+    return template
+end
+
+function format_csv_print(data_dict)
+    iteration = data_dict["iteration"]
+    line = "$iteration;"
+
+    for key in sort(collect(keys(data_dict)))
+        if key != "iteration"
+            value = data_dict[key]
+            line = line * "$value;"
+        end
+    end
+
+    return line * "\n"    
+end
+
+function format_csv_header(data_dict)
+    line = "iteration;"
+
+    for key in sort(collect(keys(data_dict)))
+        if key != "iteration"
+            line = line * "$key;"
+        end
+    end
+
+    return line * "\n"    
+end
+
+function save_to_csv(filename, data_dict)
+    line = format_csv_print(data_dict)
+
+    if !isfile(filename)
+        header = format_csv_header(data_dict)
+        line = header * line
+    end
+
+    open(filename, "a") do file
+        write(file, line)
+    end
+end
+
+function print_iteration_data(data_dict; cli_only_checkpoint = false, checkpoint = 0, to_csv = false, output_csv = "")
+    iteration = data_dict["iteration"]
+
+    if cli_only_checkpoint
+        if mod(iteration, checkpoint) == 0 || data_dict["stop_condition"] != ""
+            print(format_cli_print(data_dict))
+        end
+    else
+        print(format_cli_print(data_dict))
+    end
+
+    # will save to csv at every call to print_iteration_data
+    if to_csv
+        save_to_csv(output_csv, data_dict)
+    end
 end
