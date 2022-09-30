@@ -255,7 +255,9 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, ub_algorith
                 iteration_data["stop_condition"] = "Lower bound found. Gap threshold reached. The denominator do the subgradient is zero, but the solution is unfeasible."
             end
         elseif mi < epsilon_min
-            iteration_data["stop_condition"] = "Lower bound found. mi < epsilon_min."
+            iteration_data["stop_condition"] = "Lower bound found. mi too small (mi < epsilon_min)."
+        elseif epsilon < epsilon_min
+            iteration_data["stop_condition"] = "Lower bound found. epsilon too small (epsilon < epsilon_min)."
         elseif iteration == max_iterations
             iteration_data["stop_condition"] = "Maximum number of iterations reached"
         end
