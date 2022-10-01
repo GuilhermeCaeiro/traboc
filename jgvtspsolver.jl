@@ -51,7 +51,7 @@ function main(args)
     if strategy == "-help"
         show_info( " " )
         show_info( "Lagrangean-relaxation based strategies:" )
-        show_info( "jgvtspsolver.jl <christofides|factor2approximation|christofidesandfactor2> <testdatafile> <max_iterations> <gap_threshold> <epsilon> <current|best|5pct|1pct> <static|lbdecay|itdecay|itincrease> [<check_point>] [<debug|info|error>]" )
+        show_info( "jgvtspsolver.jl <christofides|factor2approximation|christofidesandfactor2> <testdatafile> <max_iterations> <gap_threshold> <epsilon> <current|best|5pct|1pct> <static|lbdecay|itdecay|itincrease> <epsilon_decay_interval> <epsilon_decay_multiplier> [<check_point>] [<debug|info|error>]" )
         show_info( "<christofides|factor2approximation|christofidesandfactor2> strategy engine to be used in experiment." )
         show_info( "<testdatafile> path to test data file to be used" )
         show_info( "<max_iterations> maximn number of iterations" )

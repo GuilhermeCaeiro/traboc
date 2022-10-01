@@ -20,12 +20,10 @@ include("onetree.jl")
 # obtains the lagrangean_relaxation with christofides method 
 #  
 # Parameters
-# exp_params -> experiment parameters
+# exp_params -> dictionary containing the experiment parameters
 # Returns 
 # void
 function lagrangean_relaxation(exp_params)
-
-    save_step(exp_id,"lagrangean_relaxation","start","algorithm")
 
     exp_id = exp_params["exp_id"]
     testdatafile = exp_params["testdatafile"]
@@ -34,11 +32,13 @@ function lagrangean_relaxation(exp_params)
     gap_threshold = parse(Float64, exp_params["gap_threshold"])
     epsilon = parse(Float64, exp_params["epsilon"])
     mi_option = exp_params["mi_option"]
-    epsilon_strategy = exp_params["mi_option"]
+    epsilon_strategy = exp_params["epsilon_strategy"]
     epsilon_decay_interval = parse(Int64, exp_params["epsilon_decay_interval"])
     epsilon_decay_multiplier = parse(Float64, exp_params["epsilon_decay_multiplier"])
 
     check_point = parse(Int64,exp_params["check_point"])
+
+    save_step(exp_id,"lagrangean_relaxation","start","algorithm")
 
     upper_bounds = Array{Float64}(undef, 0)
     lower_bounds = Array{Float64}(undef, 0)
@@ -206,7 +206,7 @@ function lagrangean_relaxation(exp_params)
         end
 
         save_result(exp_id, "lagrangean_relaxation:$iteration", "mi", mi)
-
+        current_u = u
         u = u + mi * G
 
         #draw(PDF(string("christofides_", iteration, ".pdf"), 16cm, 16cm), gplot(christofides_sol, nodelabel=1:nv(one_tree_sol)))
@@ -236,7 +236,8 @@ function lagrangean_relaxation(exp_params)
             "gap_threshold" => gap_threshold,
             "mi_option" => mi_option, 
             "mi" => mi,
-            "new u" => u,
+            "current_u" => current_u,
+            "new_u" => u,
             "G" => G,
             "is_optimal" => false,
             "stop_condition" => "",
@@ -299,18 +300,14 @@ function lagrangean_relaxation(exp_params)
         elseif epsilon_strategy == "lbdecay1"
             if (iteration - last_lb_or_epsilon_update) > epsilon_decay_interval #(max_iterations / 20)
                 epsilon = epsilon * epsilon_decay_multiplier
-
                 last_lb_or_epsilon_update = iteration
             end
-
         elseif epsilon_strategy == "lbdecay2"
             if (iteration - last_lb_or_epsilon_update) > epsilon_decay_interval #(max_iterations / 20)
                 epsilon = epsilon * epsilon_decay_multiplier
             end
         elseif epsilon_strategy == "itdecay"
             epsilon = epsilon * epsilon_decay_multiplier #0.9999999
-        elseif epsilon_strategy == "itincrease"
-            epsilon = epsilon * epsilon_decay_multiplier #1.0000001
         else
             println("Invalid epsilon strategy \"$epsilon_strategy\".")
             break
