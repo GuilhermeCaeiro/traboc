@@ -27,7 +27,7 @@ include("onetree.jl")
 # mi_option -> mi function option
 # Returns 
 # void
-function lagrangean_relaxation(exp_id::String, testdatafile::String, ub_algorithm::String, max_iterations::Int64, gap_threshold::Float64, epsilon::Float64, mi_option::String, epsilon_strategy::String, check_point::Int64)
+function lagrangean_relaxation(exp_id::String, testdatafile::String, ub_algorithm::String, max_iterations::Int64, gap_threshold::Float64, epsilon::Float64, mi_option::String, epsilon_strategy::String, epsilon_decay_interval::Int64, epsilon_decay_multiplier::Float64, check_point::Int64)
 
     save_step(exp_id,"lagrangean_relaxation","start","method")
 
@@ -44,7 +44,7 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, ub_algorith
 
     optimality_gap = Inf
 
-    last_lower_boud_update = 0
+    last_lb_or_epsilon_update = 0
     epsilon_min = 0.0001
 
     iteration_data = undef
@@ -160,7 +160,7 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, ub_algorith
         if current_lower_bound > best_lower_bound
             best_lower_bound = current_lower_bound
             best_lb_sol = one_tree_sol
-            last_lower_boud_update = iteration
+            last_lb_or_epsilon_update = iteration
         end
 
         #save_result(exp_id, "lagrangean_relaxation:$iteration", "iteration", iteration)
@@ -217,6 +217,8 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, ub_algorith
             "best_upper_bound" => best_upper_bound,
             "epsilon_strategy" => epsilon_strategy,
             "epsilon" => epsilon,
+            "epsilon_decay_interval" => epsilon_decay_interval, 
+            "epsilon_decay_multiplier" => epsilon_decay_multiplier,
             "optimality_gap" => optimality_gap,
             "experiment_id" => exp_id,
             "instance" => testdatafile,
@@ -225,7 +227,8 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, ub_algorith
             "gap_threshold" => gap_threshold,
             "mi_option" => mi_option, 
             "mi" => mi,
-            "u" => u,
+            "new u" => u,
+            "G" => G,
             "is_optimal" => false,
             "stop_condition" => "",
             "iteration_start_time" => iteration_start_time,
@@ -284,19 +287,21 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, ub_algorith
         # updating epsilon
         if epsilon_strategy == "static"
             # does nothing, because static means 1 * epsilon
-        elseif epsilon_strategy == "lbdecay"
-            if (iteration - last_lower_boud_update) > (max_iterations / 20)
-                epsilon = epsilon / 2
-    
-                #if epsilon < epsilon_min
-                #    println("Stopping. epsilon < epsilon_min")
-                #    break
-                #end
+        elseif epsilon_strategy == "lbdecay1"
+            if (iteration - last_lb_or_epsilon_update) > epsilon_decay_interval #(max_iterations / 20)
+                epsilon = epsilon * epsilon_decay_multiplier
+
+                last_lb_or_epsilon_update = iteration
+            end
+
+        elseif epsilon_strategy == "lbdecay2"
+            if (iteration - last_lb_or_epsilon_update) > epsilon_decay_interval #(max_iterations / 20)
+                epsilon = epsilon * epsilon_decay_multiplier
             end
         elseif epsilon_strategy == "itdecay"
-            epsilon = epsilon * 0.999 #0.9999999
+            epsilon = epsilon * epsilon_decay_multiplier #0.9999999
         elseif epsilon_strategy == "itincrease"
-            epsilon = epsilon * 1.001 #1.0000001
+            epsilon = epsilon * epsilon_decay_multiplier #1.0000001
         else
             println("Invalid epsilon strategy \"$epsilon_strategy\".")
             break

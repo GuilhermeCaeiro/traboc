@@ -37,14 +37,16 @@ function main(args)
 
     strategy = args[1]
     if strategy == "-help"
-        show_info( "jgvtspsolver.jl <christofides|gurobi> <testdatafile> <max_iterations> <gap_threshold> <epsilon> <current|best|5pct|1pct> <static|lbdecay|itdecay|itincrease> [<check_point>]" )
+        show_info( "jgvtspsolver.jl <christofides|gurobi> <testdatafile> <max_iterations> <gap_threshold> <epsilon> <current|best|5pct|1pct> <static|lbdecay|itdecay> <epsilon_decay_interval> <epsilon_decay_multiplier> [<check_point>]" )
         show_info( "<christofides|gurobi> solver engine to be used in experiment" )
         show_info( "<testdatafile> path to test data file to be used" )
         show_info( "<max_iterations> maximn number of iterations" )
         show_info( "<gap_threshold> gap gap_threshold to be used in lagrangean_relaxation/christofides" )
         show_info( "<epsilon> epsilon value to be used in lagrangean_relaxation/christofides" )
         show_info( "<current|best|5pct|1pct> mi_function to be used to calculate mi parameter" )
-        show_info( "<static|lbdecay|itdecay|itincrease> strategy to update epsilon" )
+        show_info( "<static|lbdecay1|lbdecay2|itdecay> strategy to update epsilon" )
+        show_info( "<epsilon_decay_interval> number of iterations without update to the lb that must pass before epsilon is updated" )
+        show_info( "<epsilon_decay_multiplier> epsilon decay multiplier to be used by lbdecay and itdecay (can be > 1, but should be ideally between 0 and 1." )
         show_info( "[<check_point>] iteration check-point to show progress (default: max_iterations)" )
         exit()
     end
@@ -55,9 +57,11 @@ function main(args)
     epsilon = parse(Float64,args[5])
     mi_option = args[6]
     epsilon_strategy = args[7]
+    epsilon_decay_interval = parse(Int64, args[8])
+    epsilon_decay_multiplier = parse(Float64,args[9])
     check_point = max_iterations
-    if length(args) > 7
-        check_point = parse(Int64,args[8])
+    if length(args) > 9
+        check_point = parse(Int64,args[10])
     end
 
     show_info("********************************************************************")
@@ -76,18 +80,20 @@ function main(args)
     show_info("gap_threshold: ", gap_threshold)
     show_info("epsilon: ", epsilon)
     show_info("mi_function: ", mi_option)
-    show_info("epsilon strategy: ", epsilon_strategy)
+    show_info("epsilon_strategy: ", epsilon_strategy)
+    show_info("epsilon_decay_interval: ", epsilon_decay_interval)
+    show_info("epsilon_decay_multiplier: ", epsilon_decay_multiplier)
     show_info("check_point: ", check_point)
 
     save_step(exp_id,"main","start","experiment")
     save_params(exp_id,strategy,testdatafile,max_iterations,gap_threshold,epsilon,mi_option,check_point)
 
     if strategy in ["christofides", "factor2approximation", "christofidesandfactor2"]
-        lagrangean_relaxation(exp_id, testdatafile, strategy, max_iterations, gap_threshold, epsilon, mi_option, epsilon_strategy, check_point)
+        lagrangean_relaxation(exp_id, testdatafile, strategy, max_iterations, gap_threshold, epsilon, mi_option, epsilon_strategy, epsilon_decay_interval, epsilon_decay_multiplier, check_point)
     elseif strategy == "gurobi"
         lazy(testdatafile)
     elseif strategy == "lazyandchris"
-        lower, upper = lagrangean_relaxation(exp_id, testdatafile, "christofides", max_iterations, gap_threshold, epsilon, mi_option, epsilon_strategy, check_point)
+        lower, upper = lagrangean_relaxation(exp_id, testdatafile, "christofides", max_iterations, gap_threshold, epsilon, mi_option, epsilon_strategy, epsilon_decay_interval, epsilon_decay_multiplier, check_point)
         lazy(testdatafile, lower, upper)
     else
         @error "Por favor informe uma estratégia de execução válida: cristofides ou solvers"

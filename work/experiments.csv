@@ -61,3 +61,14 @@ experiment_id,strategy,testdatafile,max_iterations,gap_threshold,epsilon,mi_opti
 20220927225713,christofides,./input/burma14.xml,1000,1.0e-5,1.0,1pct,100
 20220927230834,christofides,./input/burma14.xml,1000,1.0e-5,1.0,1pct,100
 20220929223211,christofides,./input/burma14.xml,1000,1.0e-5,1.0,1pct,100
+20220930195634,christofides,./input/burma14.xml,1000,1.0e-5,1.0,1pct,1000
+20220930200554,christofides,./input/burma14.xml,1000,1.0e-5,1.0,1pct,1000
+20220930201636,christofides,./input/burma14.xml,1000,1.0e-5,1.0,1pct,100
+20220930201952,christofides,./input/burma14.xml,1000,1.0e-5,1.0,1pct,100
+20220930202230,christofides,./input/burma14.xml,1000,1.0e-5,1.0,1pct,100
+20220930202514,christofides,./input/burma14.xml,1000,1.0e-5,2.0,1pct,100
+20220930203711,christofides,./input/burma14.xml,1000,1.0e-5,2.0,1pct,100
+20220930203921,christofides,./input/burma14.xml,1000,1.0e-5,2.0,1pct,100
+20220930204800,christofides,./input/burma14.xml,1000,1.0e-5,2.0,1pct,100
+20220930205319,christofides,./input/burma14.xml,1000,1.0e-5,2.0,1pct,100
+20220930210529,christofides,./input/burma14.xml,1000,1.0e-5,2.0,1pct,100
