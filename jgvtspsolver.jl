@@ -105,19 +105,23 @@ function main(args)
         exp_params["epsilon"] = args[5] 
         exp_params["mi_option"] = args[6] 
         exp_params["epsilon_strategy"] = args[7] 
+        exp_params["epsilon_decay_interval"] = args[8] 
+        exp_params["epsilon_decay_multiplier"] = args[9] 
 
         show_info("gap_threshold: ", exp_params["gap_threshold"])
         show_info("epsilon: ", exp_params["epsilon"])
         show_info("mi_function: ", exp_params["mi_option"])
-        show_info("epsilon strategy: ", exp_params["epsilon_strategy"])
+        show_info("epsilon_strategy: ", exp_params["epsilon_strategy"])
+        show_info("epsilon_decay_interval: ", exp_params["epsilon_decay_interval"])
+        show_info("epsilon_decay_multiplier: ", exp_params["epsilon_decay_multiplier"])
     
-        if length(args) > 7
-            exp_params["check_point"] = args[8] 
+        if length(args) > 9
+            exp_params["check_point"] = args[10] 
             show_info("check_point: ", exp_params["check_point"])
         end
-        if length(args) > 8
-            exp_params["log_level"] = args[9]             
-            show_info("log_level: ", exp_params["check_point"])
+        if length(args) > 10
+            exp_params["log_level"] = args[11]             
+            show_info("log_level: ", exp_params["log_level"])
             set_loglevel(exp_params["log_level"],exp_id)
         end
 

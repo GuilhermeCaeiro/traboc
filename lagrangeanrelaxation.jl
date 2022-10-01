@@ -35,6 +35,9 @@ function lagrangean_relaxation(exp_params)
     epsilon = parse(Float64, exp_params["epsilon"])
     mi_option = exp_params["mi_option"]
     epsilon_strategy = exp_params["mi_option"]
+    epsilon_decay_interval = parse(Int64, exp_params["epsilon_decay_interval"])
+    epsilon_decay_multiplier = parse(Float64, exp_params["epsilon_decay_multiplier"])
+
     check_point = parse(Int64,exp_params["check_point"])
 
     upper_bounds = Array{Float64}(undef, 0)
