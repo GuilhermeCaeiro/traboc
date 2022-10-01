@@ -50,7 +50,7 @@ function lagrangean_relaxation(exp_params)
 
     optimality_gap = Inf
 
-    last_lower_boud_update = 0
+    last_lb_or_epsilon_update = 0
     epsilon_min = 0.0001
 
     iteration_data = undef
@@ -166,7 +166,7 @@ function lagrangean_relaxation(exp_params)
         if current_lower_bound > best_lower_bound
             best_lower_bound = current_lower_bound
             best_lb_sol = one_tree_sol
-            last_lower_boud_update = iteration
+            last_lb_or_epsilon_update = iteration
         end
 
         #save_result(exp_id, "lagrangean_relaxation:$iteration", "iteration", iteration)
@@ -223,6 +223,8 @@ function lagrangean_relaxation(exp_params)
             "best_upper_bound" => best_upper_bound,
             "epsilon_strategy" => epsilon_strategy,
             "epsilon" => epsilon,
+            "epsilon_decay_interval" => epsilon_decay_interval, 
+            "epsilon_decay_multiplier" => epsilon_decay_multiplier,
             "optimality_gap" => optimality_gap,
             "experiment_id" => exp_id,
             "instance" => testdatafile,
@@ -231,7 +233,8 @@ function lagrangean_relaxation(exp_params)
             "gap_threshold" => gap_threshold,
             "mi_option" => mi_option, 
             "mi" => mi,
-            "u" => u,
+            "new u" => u,
+            "G" => G,
             "is_optimal" => false,
             "stop_condition" => "",
             "iteration_start_time" => iteration_start_time,
@@ -261,7 +264,9 @@ function lagrangean_relaxation(exp_params)
                 iteration_data["stop_condition"] = "Lower bound found. Gap threshold reached. The denominator do the subgradient is zero, but the solution is unfeasible."
             end
         elseif mi < epsilon_min
-            iteration_data["stop_condition"] = "Lower bound found. mi < epsilon_min."
+            iteration_data["stop_condition"] = "Lower bound found. mi too small (mi < epsilon_min)."
+        elseif epsilon < epsilon_min
+            iteration_data["stop_condition"] = "Lower bound found. epsilon too small (epsilon < epsilon_min)."
         elseif iteration == max_iterations
             iteration_data["stop_condition"] = "Maximum number of iterations reached"
         end
@@ -288,19 +293,21 @@ function lagrangean_relaxation(exp_params)
         # updating epsilon
         if epsilon_strategy == "static"
             # does nothing, because static means 1 * epsilon
-        elseif epsilon_strategy == "lbdecay"
-            if (iteration - last_lower_boud_update) > (max_iterations / 20)
-                epsilon = epsilon / 2
-    
-                #if epsilon < epsilon_min
-                #    println("Stopping. epsilon < epsilon_min")
-                #    break
-                #end
+        elseif epsilon_strategy == "lbdecay1"
+            if (iteration - last_lb_or_epsilon_update) > epsilon_decay_interval #(max_iterations / 20)
+                epsilon = epsilon * epsilon_decay_multiplier
+
+                last_lb_or_epsilon_update = iteration
+            end
+
+        elseif epsilon_strategy == "lbdecay2"
+            if (iteration - last_lb_or_epsilon_update) > epsilon_decay_interval #(max_iterations / 20)
+                epsilon = epsilon * epsilon_decay_multiplier
             end
         elseif epsilon_strategy == "itdecay"
-            epsilon = epsilon * 0.999 #0.9999999
+            epsilon = epsilon * epsilon_decay_multiplier #0.9999999
         elseif epsilon_strategy == "itincrease"
-            epsilon = epsilon * 1.001 #1.0000001
+            epsilon = epsilon * epsilon_decay_multiplier #1.0000001
         else
             println("Invalid epsilon strategy \"$epsilon_strategy\".")
             break
