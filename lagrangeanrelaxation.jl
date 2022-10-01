@@ -20,16 +20,22 @@ include("onetree.jl")
 # obtains the lagrangean_relaxation with christofides method 
 #  
 # Parameters
-# exp_id -> experiment id
-# testdatafile -> tesd data file
-# max_iterations -> max iterations for lagrangean relaxation
-# epsilon -> epsilon gap
-# mi_option -> mi function option
+# exp_params -> experiment parameters
 # Returns 
 # void
-function lagrangean_relaxation(exp_id::String, testdatafile::String, ub_algorithm::String, max_iterations::Int64, gap_threshold::Float64, epsilon::Float64, mi_option::String, epsilon_strategy::String, check_point::Int64)
+function lagrangean_relaxation(exp_params)
 
-    save_step(exp_id,"lagrangean_relaxation","start","method")
+    save_step(exp_id,"lagrangean_relaxation","start","algorithm")
+
+    exp_id = exp_params["exp_id"]
+    testdatafile = exp_params["testdatafile"]
+    ub_algorithm = exp_params["ub_algorithm"]
+    max_iterations = parse(Int64, exp_params["max_iterations"])
+    gap_threshold = parse(Float64, exp_params["gap_threshold"])
+    epsilon = parse(Float64, exp_params["epsilon"])
+    mi_option = exp_params["mi_option"]
+    epsilon_strategy = exp_params["mi_option"]
+    check_point = parse(Int64,exp_params["check_point"])
 
     upper_bounds = Array{Float64}(undef, 0)
     lower_bounds = Array{Float64}(undef, 0)
@@ -316,7 +322,7 @@ function lagrangean_relaxation(exp_id::String, testdatafile::String, ub_algorith
     show_result(exp_id, "lagrangean_relaxation", "optimality_gap ", optimality_gap)
     show_result(exp_id, "lagrangean_relaxation", "iterations ran ", total_iterations)
 
-    save_step(exp_id,"lagrangean_relaxation","finish","method")
+    save_step(exp_id,"lagrangean_relaxation","finish","algorithm")
     return maximum(lower_bounds), minimum(upper_bounds)
 end
 

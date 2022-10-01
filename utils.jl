@@ -125,11 +125,11 @@ function create_complete_graph(n)
 		end
 	end
 
-    #@debug begin
-    #    plt = gplot(new_graph, nodelabel=1:nv(new_graph))
-    #    draw(PNG(string("./temp/complete_graph.png"), 16cm, 16cm), plt)
-    #    display(plt)
-    #end
+    @debug begin
+        plt = gplot(new_graph, nodelabel=1:nv(new_graph))
+        draw(PNG(string("./temp/complete_graph",get_next_id(),".png"), 16cm, 16cm), plt)
+        display(plt)
+    end
 
     @debug new_graph
     @debug "create_complete_graph...done"
@@ -174,11 +174,11 @@ function minimum_spanning_tree(exp_id, step_id, graph, c, n)
         add_edge!(mst, src(edge), dst(edge))
     end
     
-    plt = gplot(mst, nodelabel=1:nv(mst))
-    #draw(PNG(string("./work/",exp_id,"/",graph_name,".png"), 16cm, 16cm), plt)
-    #@debug begin
-    #    display(plt)
-    #end
+    @debug begin
+        plt = gplot(mst, nodelabel=1:nv(mst))
+        draw(PNG(string("./work/",exp_id,"/",graph_name,".png"), 16cm, 16cm), plt)    
+        display(plt)
+    end
 
     @debug "minimum_spanning_tree...done"
 
@@ -234,11 +234,11 @@ function count_degree_and_form_subgraph(exp_id, step_id, graph, cost_matrix)
         i+=1
     end
 
-    plt = gplot(subg, nodelabel=1:nv(subg)) 
-    #draw(PNG(string("./work/",exp_id,"/",step_id,"_subgraph.png"), 16cm, 16cm), plt)
-    #@debug begin
-    #    display(plt)
-    #end
+    @debug begin
+        plt = gplot(subg, nodelabel=1:nv(subg)) 
+        draw(PNG(string("./work/",exp_id,"/",step_id,"_subgraph.png"), 16cm, 16cm), plt)    
+        display(plt)
+    end
 
     @debug "count_degree_and_form_subgraph...done"
 
@@ -284,12 +284,11 @@ function min_weight_perfect_matching(exp_id, graph, cost_matrix)
         add_edge!(match_graph, i, match.mate[i])
     end
 
-    plt = gplot(match_graph, nodelabel=1:nv(match_graph))
-    #draw(PNG(string("./work/",exp_id,"/match_graph.png"), 16cm, 16cm), plt)
-
-    #@debug begin
-    #    display(plt)
-    #end
+    @debug begin
+        plt = gplot(match_graph, nodelabel=1:nv(match_graph))
+        draw(PNG(string("./work/",exp_id,"/match_graph.png"), 16cm, 16cm), plt)    
+        display(plt)
+    end
 
     @debug "min_weight_perfect_matching...done"
 

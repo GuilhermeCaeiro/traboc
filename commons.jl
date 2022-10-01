@@ -1,9 +1,12 @@
-
 using Logging
 using Dates
 using DataFrames
 using CSV
 
+function get_next_id()
+    local_datatime = Dates.now()
+    return Dates.format(local_datatime, "HHMMSSsss")
+end
 
 function new_folder(folder)
     mkdir(folder)
@@ -25,24 +28,24 @@ function new_experiment()
     df_steps = DataFrame(["timestamp" "step_id" "action" "target"], :auto)
     CSV.write(string("./work/", exp_id, "/experiment_steps.csv"), df_steps; append=true)
     df_results = DataFrame(["timestamp" "step_id" "key" "value"], :auto)
-    CSV.write(string("./work/", exp_id, "/experiment_steps.csv"), df_results; append=true)
+    CSV.write(string("./work/", exp_id, "/experiment_results.csv"), df_results; append=true)
     return exp_id 
 end
 
 function save_step(exp_id,step_id,action,target)
-    return
     moment=now()
     timestamp = Dates.value(moment)
     df = DataFrame([timestamp step_id action target], :auto)
     CSV.write(string("./work/", exp_id, "/experiment_steps.csv"), df; append=true)
+    return
 end
 
 function save_result(exp_id,step_id,key,value)
-    return
     moment=now()
     timestamp = Dates.value(moment)
     df = DataFrame([timestamp step_id key value], :auto)
     CSV.write(string("./work/", exp_id, "/experiment_results.csv"), df; append=true)
+    return
 end
 
 function show_result(exp_id,step_id,key,value)
