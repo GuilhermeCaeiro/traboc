@@ -31,7 +31,7 @@ function lagrangean_relaxation(exp_params)
     max_iterations = parse(Int64, exp_params["max_iterations"])
     gap_threshold = parse(Float64, exp_params["gap_threshold"])
     epsilon = parse(Float64, exp_params["epsilon"])
-    mi_option = exp_params["mi_option"]
+    mi_function = exp_params["mi_function"]
     epsilon_strategy = exp_params["epsilon_strategy"]
     epsilon_decay_interval = parse(Int64, exp_params["epsilon_decay_interval"])
     epsilon_decay_multiplier = parse(Float64, exp_params["epsilon_decay_multiplier"])
@@ -124,7 +124,7 @@ function lagrangean_relaxation(exp_params)
             ub_solution = unite_and_hamilton(exp_id, iteration, current_cost_matrix, n)
             second_ub_solution = factor_2_approximation(exp_id, iteration, current_cost_matrix, n) 
         else
-            println("Invalid upper bound algorithm \"$ub_algorithm\".")
+            show_error("Invalid upper bound algorithm \"$ub_algorithm\".")
         end
 
         if ub_algorithm == "christofidesandfactor2"
@@ -172,40 +172,28 @@ function lagrangean_relaxation(exp_params)
             last_lb_or_epsilon_update = iteration
         end
 
-        #save_result(exp_id, "lagrangean_relaxation:$iteration", "iteration", iteration)
-        #save_result(exp_id, "lagrangean_relaxation:$iteration", "upper_bound", best_upper_bound)
-        #save_result(exp_id, "lagrangean_relaxation:$iteration", "lower_bound", best_lower_bound)
-        #save_result(exp_id, "lagrangean_relaxation:$iteration", "upper_bound_sol", best_ub_sol)
-        #save_result(exp_id, "lagrangean_relaxation:$iteration", "lower_bound_sol", best_lb_sol)
-
-        #@debug u
-
         #optimality_gap = (current_upper_bound - current_lower_bound) / current_upper_bound
         optimality_gap = (best_upper_bound - best_lower_bound) / best_upper_bound
         
-        #save_result(exp_id, "lagrangean_relaxation:$iteration", "optimality_gap", optimality_gap)
-
         # lagrangian vars update
         edges_per_vertex = count_vertex_edges(one_tree_sol, n)
-        #save_result(exp_id, "lagrangean_relaxation:$iteration", "edges_per_vertex", edges_per_vertex)
 
         G = 2 .- edges_per_vertex
         denominator = sum(G .^ 2)
 
         #mi function selector
-        if mi_option == "current" 
+        if mi_function == "current" 
             mi = epsilon * (current_upper_bound - current_lower_bound) / denominator
-        elseif mi_option == "best"
+        elseif mi_function == "best"
             mi = epsilon * (best_upper_bound - current_lower_bound) / denominator
-        elseif mi_option == "5pct"
+        elseif mi_function == "5pct"
             mi = epsilon * (1.05 * best_upper_bound - current_lower_bound) / denominator
-        elseif mi_option == "1pct"
+        elseif mi_function == "1pct"
             mi = epsilon * (1.01 * best_upper_bound - current_lower_bound) / denominator
         else
             @error "Mi function option não informada."
         end
 
-        save_result(exp_id, "lagrangean_relaxation:$iteration", "mi", mi)
         current_u = u
         u = u + mi * G
 
@@ -234,7 +222,7 @@ function lagrangean_relaxation(exp_params)
             "upper_bound_algorithm" => ub_algorithm,
             "max_iterations" => max_iterations,
             "gap_threshold" => gap_threshold,
-            "mi_option" => mi_option, 
+            "mi_function" => mi_function, 
             "mi" => mi,
             "current_u" => current_u,
             "new_u" => u,
@@ -309,7 +297,7 @@ function lagrangean_relaxation(exp_params)
         elseif epsilon_strategy == "itdecay"
             epsilon = epsilon * epsilon_decay_multiplier #0.9999999
         else
-            println("Invalid epsilon strategy \"$epsilon_strategy\".")
+            show_error("Invalid epsilon strategy \"$epsilon_strategy\".")
             break
         end
         

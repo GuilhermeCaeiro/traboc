@@ -21,7 +21,7 @@ include("lagrangeanrelaxation.jl")
 include("lazytsp.jl")
 
 function save_params(exp_params)
-    parameters = ["exp_id" "strategy" "testdatafile" "max_iterations" "ub_algorithm" "gap_threshold" "epsilon" "mi_function" "epsilon_strategy" "check_point" "log_level" "use_combs" "pre_solver" "lower_bound" "upper_bound"]
+    parameters = ["exp_id" "strategy" "testdatafile" "max_iterations" "ub_algorithm" "gap_threshold" "epsilon" "mi_function" "epsilon_strategy" "epsilon_decay_interval" "epsilon_decay_multiplier" "check_point" "log_level" "use_combs" "pre_solver" "lower_bound" "upper_bound"]
     params_data = [ string(get!(exp_params,param_key,"-")) for param_key in parameters ]
     if !isfile("./work/experiments.csv")
         hdf = DataFrame(parameters, :auto)
@@ -86,6 +86,8 @@ function main(args)
     exp_params["strategy"] = strategy
     exp_params["testdatafile"] = args[2]
     exp_params["max_iterations"] = args[3] 
+    exp_params["check_point"] = args[3]
+    exp_params["log_level"] = "info"             
 
     show_info("Exeperimento: ", exp_id)
     show_info("Parâmetros: " )
@@ -103,14 +105,14 @@ function main(args)
         exp_params["ub_algorithm"] = strategy 
         exp_params["gap_threshold"] = args[4] 
         exp_params["epsilon"] = args[5] 
-        exp_params["mi_option"] = args[6] 
+        exp_params["mi_function"] = args[6] 
         exp_params["epsilon_strategy"] = args[7] 
         exp_params["epsilon_decay_interval"] = args[8] 
         exp_params["epsilon_decay_multiplier"] = args[9] 
 
         show_info("gap_threshold: ", exp_params["gap_threshold"])
         show_info("epsilon: ", exp_params["epsilon"])
-        show_info("mi_function: ", exp_params["mi_option"])
+        show_info("mi_function: ", exp_params["mi_function"])
         show_info("epsilon_strategy: ", exp_params["epsilon_strategy"])
         show_info("epsilon_decay_interval: ", exp_params["epsilon_decay_interval"])
         show_info("epsilon_decay_multiplier: ", exp_params["epsilon_decay_multiplier"])
@@ -176,7 +178,7 @@ function main(args)
         exp_params["lower_bound"] = string(-Inf)
         exp_params["upper_bound"] = string(Inf)
 
-        if exp_params["pre_solver"] != "none"
+        if exp_params["pre_solver"] in ["christofides", "factor2approximation", "christofidesandfactor2"]
             exp_params["ub_algorithm"] = exp_params["pre_solver"]
             @debug "lagrangean_relaxation as pre solver..." 
             lower, upper = lagrangean_relaxation(exp_params)
