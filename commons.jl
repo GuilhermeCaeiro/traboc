@@ -129,3 +129,30 @@ function print_iteration_data(data_dict; cli_only_checkpoint = false, checkpoint
         save_to_csv(output_csv, data_dict)
     end
 end
+
+function check_int_param( param_value::String, min_value::Int64, max_value::Int64)
+    try
+        return ( min_value <= parse(Int64, param_value) <= max_value )
+    catch
+        return false
+    end
+    return true
+end
+
+function check_float_param( param_value::String, min_value::Float64, max_value::Float64)
+    try
+        return ( min_value <= parse(Float64, param_value) <= max_value )
+    catch
+        return false
+    end
+    return true
+end
+
+function check_opt_param( param_value::String, param_options::String)
+    try
+        return ( param_value in param_options )
+    catch
+        return false
+    end
+    return true
+end
