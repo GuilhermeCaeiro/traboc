@@ -49,6 +49,21 @@ end
 
 #gplot(solution, nodelabel=1:n)
 
+function build_graph_from_tour(tour)
+    # builds the proper graph to be returned
+    graph = SimpleGraph(length(tour))
+
+    for i in 1:n
+        if i != n
+            add_edge!(graph, tour[i], tour[i + 1])
+        else
+            add_edge!(graph, tour[i], tour[1])
+        end
+    end
+
+    return graph
+end
+
 function farthest_insertion(cost_matrix, n)
     ordered_tour = []
     remaining_nodes = collect(1:n)
@@ -136,22 +151,105 @@ function farthest_insertion(cost_matrix, n)
         deleteat!(remaining_nodes, findall(x->x == farthest_node, remaining_nodes))
     end
 
-    # builds the proper graph to be returned
-    graph = SimpleGraph(n)
-
-    for i in 1:n
-        if i != n
-            add_edge!(graph, ordered_tour[i], ordered_tour[i + 1])
-        else
-            add_edge!(graph, ordered_tour[i], ordered_tour[1])
-        end
-    end
+    graph = build_graph_from_tour(ordered_tour)
 
     return graph
 end
 
-function 2opt()
+function get_route_from_graph(graph, n)
+    route = []
+    available_nodes = collect(1:n)
+    current_node = 1
 
+    while (length(available_nodes) > 0)
+        push!(route, current_node)
+        deleteat!(available_nodes, findall(x->x == current_node, available_nodes))
+
+        for neighbor in neighbors(graph, current_node)
+            if !(neighbor in route)
+                current_node = neighbor
+                break
+            end
+        end
+    end
+
+    return route    
+end
+
+function two_opt_cost_variation(route, cost_matrix, i, j)
+    cost_new_edge_1 = cost_matrix[route[i - 1], route[j - 1]]
+    cost_new_edge_2 = cost_matrix[route[i], route[j]]
+    cost_old_edge_1 = cost_matrix[route[i - 1], route[i]]
+    cost_old_edge_2 = cost_matrix[route[j - 1], route[j]]
+    return cost_new_edge_1 + cost_new_edge_2 - cost_old_edge_1 - cost_old_edge_2
+end
+
+# [1 3] -> 1
+# [2 4] -> 1
+# [1 2] -> 5
+# [3 4] -> 7 
+
+function two_opt_iteration(route, cost, cost_matrix)
+    for i in 2:(n-1)
+        for j in i+1:n
+            println("i j -> ",i , " ", j)
+            if j - i == 1
+                println("continue")
+                continue
+            end
+
+            cost_variation = two_opt_cost_variation(route, cost_matrix, i, j)
+            println("Cost variation of $cost_variation")
+
+            if cost_variation < 0
+                println("Negative cost variation.")
+                route[i:j-1] = reverse(route[i:j-1])
+                #route[i+:j] = reverse(route[i+1:j])
+                cost = cost + cost_variation
+                println("Stopped current iteration. route $route, cost $cost")
+                return route, cost
+            end
+
+        end
+    end
+    return route, cost
+end
+
+# based on the available solution at
+# https://stackoverflow.com/questions/53275314/2-opt-algorithm-to-solve-the-travelling-salesman-problem-in-python
+# from user Fradge
+function two_opt(graph, cost_matrix, n; max_iterations = 1000, cost = Inf)
+    # gets the cost of the graph, if not provided
+    if cost == Inf
+        println("Calculating cost from cost matrix")
+        cost = calculate_graph_cost(graph, cost_matrix, n)
+        println("Graph cost ", cost)
+    end
+
+    if n <= 3
+        return graph, cost
+    end
+
+    # retrieves the route/path (non cyclical)
+    route = get_route_from_graph(graph, n)
+    println("route from graph ", route)
+
+    for iteration in 1:max_iterations
+        println("iteration $iteration - route $route, cost $cost")
+        route, current_cost = two_opt_iteration(route, cost, cost_matrix)
+        
+        if current_cost < cost
+            cost = current_cost
+            println("route improved at it. $iteration - route $route, cost $cost")
+        else
+            println("No further improvement. Stopped iterating.")
+            break
+        end
+    end
+    println("Final route ", route)
+    graph = build_graph_from_tour(route)
+
+    return graph, cost
 end
 
 instance = [
@@ -161,10 +259,50 @@ instance = [
     2 1 7 0
 ]
 n = 4
-solution = nearest_neighbor(instance, n)
-println(calculate_graph_cost(solution, instance, n))
+
+# [1 2 3 4] -> 18
+# 
+#solution = nearest_neighbor(instance, n)
+#println(calculate_graph_cost(solution, instance, n))
+#println(get_route_from_graph(solution, n))
 #gplot(solution, nodelabel=1:n)
 
+
+println("Tests farthest insertion")
 solution = farthest_insertion(instance, n)
 println(calculate_graph_cost(solution, instance, n))
+println(get_route_from_graph(solution, n))
+gplot(solution, nodelabel=1:n)
+
+
+instance = [
+    0 5 1 2 
+    5 0 4 1
+    1 4 0 7
+    2 1 7 0
+]
+n = 4
+g = SimpleGraph(n)
+add_edge!(g, 1, 2)
+add_edge!(g, 2, 3)
+add_edge!(g, 3, 4)
+add_edge!(g, 1, 4)
+#println(get_route_from_graph(g, n))
+g, cost = two_opt(g, instance, n)
+gplot(g, nodelabel=1:n)
+
+
+instance = [
+    0 5 1 2 
+    5 0 4 1
+    1 4 0 2
+    2 1 2 0
+]
+n = 4
+solution = nearest_neighbor(instance, n)
+println("NN cost ", calculate_graph_cost(solution, instance, n))
+solution, cost = two_opt(solution, instance, n)
+println("Two opt ost: $cost")
+solution_cost = calculate_graph_cost(solution, instance, n)
+println("Confirming two opt cost: $solution_cost")
 gplot(solution, nodelabel=1:n)
