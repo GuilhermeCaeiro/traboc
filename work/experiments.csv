@@ -14,3 +14,5 @@ exp_id,strategy,testdatafile,max_iterations,ub_algorithm,gap_threshold,epsilon,m
 20221003224759,christofides,./input/burma14.xml,1000,christofides,0.00001,2,1pct,lbdecay2,50,0.5,100,info,-,-,-,-
 20221003225010,christofides,./input/burma14.xml,1000,christofides,0.00001,2,1pct,lbdecay1,50,0.5,100,info,-,-,-,-
 20221003225301,christofides,./input/burma14.xml,1000,christofides,0.00001,2,1pct,lbdecay1,50,0.5,100,info,-,-,-,-
+20221003230000,christofides,./input/burma14.xml,1000,christofides,0.00001,2,1pct,lbdecay1,50,0.5,100,info,-,-,-,-
+20221003230217,christofides,./input/burma14.xml,1000,christofides,0.00001,2,1pct,lbdecay1,50,0.5,100,info,-,-,-,-
