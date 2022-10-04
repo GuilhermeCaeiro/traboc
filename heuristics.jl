@@ -33,8 +33,9 @@ function nearest_neighbor(cost_matrix, n)
 end
 
 function build_graph_from_tour(tour)
+    n = length(tour)
     # builds the proper graph to be returned
-    graph = SimpleGraph(length(tour))
+    graph = SimpleGraph(n)
 
     for i in 1:n
         if i != n
@@ -48,6 +49,7 @@ function build_graph_from_tour(tour)
 end
 
 function farthest_insertion(cost_matrix, n)
+    println(cost_matrix)
     ordered_tour = []
     remaining_nodes = collect(1:n)
 
@@ -72,6 +74,8 @@ function farthest_insertion(cost_matrix, n)
                 end
             end
 
+            println("remaining node $remaining_node, closest_distance $closest_distance, farthest_distance $farthest_distance")
+
             if closest_distance >= farthest_distance # >= to replace the node 0, that doesn't exist
                 farthest_node = remaining_node
                 farthest_distance = closest_distance
@@ -81,6 +85,8 @@ function farthest_insertion(cost_matrix, n)
         # finds where to insert the farthest node
         closest_edge_index = 0
         closest_edge_distance = Inf
+        println("ordered tour $ordered_tour")
+        println("remaining nodes $remaining_nodes")
 
         for idx in eachindex(ordered_tour)
             distance_i = 0
@@ -93,6 +99,9 @@ function farthest_insertion(cost_matrix, n)
             else
                 node_j = ordered_tour[idx + 1]
             end
+
+            println("nodes i j $node_i $node_j")
+            println("farthest node $farthest_node")
 
             distance_i = cost_matrix[farthest_node, node_i]
             distance_j = cost_matrix[farthest_node, node_j]
@@ -154,7 +163,7 @@ end
 # [1 2] -> 5
 # [3 4] -> 7 
 
-function two_opt_iteration(route, cost, cost_matrix)
+function two_opt_iteration(route, cost, cost_matrix, n)
     for i in 2:(n-1)
         for j in i+1:n
             if j - i == 1
@@ -191,7 +200,7 @@ function two_opt(graph, cost_matrix, n; max_iterations = 1000, cost = Inf)
     route = get_route_from_graph(graph, n)
 
     for iteration in 1:max_iterations
-        route, current_cost = two_opt_iteration(route, cost, cost_matrix)
+        route, current_cost = two_opt_iteration(route, cost, cost_matrix, n)
         
         if current_cost < cost
             cost = current_cost

@@ -2,3 +2,15 @@ exp_id,strategy,testdatafile,max_iterations,ub_algorithm,gap_threshold,epsilon,m
 20221001090431,christofides,./input/burma14.xml,1000,christofides,0.00001,2,-,lbdecay2,50,0.5,100,-,-,-,-,-
 20221001092339,christofides,./input/burma14.xml,1000,christofides,0.00001,2,1pct,lbdecay1,50,0.5,100,-,-,-,-,-
 20221001093141,christofides,./input/burma14.xml,1000,christofides,0.00001,2,1pct,itdecay,50,0.5,100,info,-,-,-,-
+20221003195931,christofides,./input/burma14.xml,1000,christofides,0.00001,2,1pct,lbdecay2,50,0.5,100,info,-,-,-,-
+20221003205441,christofides,./input/burma14.xml,1000,christofides,0.00001,2,1pct,lbdecay2,50,0.5,100,info,-,-,-,-
+20221003210735,christofides,./input/burma14.xml,1000,christofides,0.00001,2,1pct,lbdecay2,50,0.5,100,info,-,-,-,-
+20221003211648,christofides,./input/burma14.xml,1000,christofides,0.00001,2,1pct,lbdecay2,50,0.5,100,info,-,-,-,-
+20221003212548,christofides,./input/burma14.xml,1000,christofides,0.00001,2,1pct,lbdecay2,50,0.5,100,info,-,-,-,-
+20221003212812,nearestneighbor,./input/burma14.xml,1000,nearestneighbor,0.00001,2,1pct,lbdecay2,50,0.5,100,info,-,-,-,-
+20221003223553,nearestneighbor,./input/burma14.xml,1000,nearestneighbor,0.00001,2,1pct,lbdecay2,50,0.5,100,info,-,-,-,-
+20221003224126,nearestneighbor,./input/burma14.xml,1000,nearestneighbor,0.00001,2,1pct,lbdecay2,50,0.5,100,info,-,-,-,-
+20221003224520,christofides,./input/burma14.xml,1000,christofides,0.00001,2,1pct,lbdecay2,50,0.5,100,info,-,-,-,-
+20221003224759,christofides,./input/burma14.xml,1000,christofides,0.00001,2,1pct,lbdecay2,50,0.5,100,info,-,-,-,-
+20221003225010,christofides,./input/burma14.xml,1000,christofides,0.00001,2,1pct,lbdecay1,50,0.5,100,info,-,-,-,-
+20221003225301,christofides,./input/burma14.xml,1000,christofides,0.00001,2,1pct,lbdecay1,50,0.5,100,info,-,-,-,-

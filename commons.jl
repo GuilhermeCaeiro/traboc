@@ -148,9 +148,9 @@ function check_float_param( param_value::String, min_value::Float64, max_value::
     return true
 end
 
-function check_opt_param( param_value::String, param_options::String)
+function check_opt_param(param_value::String, param_options::String)
     try
-        return ( param_value in param_options )
+        return (param_value in split(param_options, "|"))
     catch
         return false
     end

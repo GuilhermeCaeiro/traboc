@@ -51,16 +51,18 @@ function main(args)
     if strategy == "-help"
         show_info( " " )
         show_info( "Lagrangean-relaxation based strategies:" )
-        show_info( "jgvtspsolver.jl <christofides|factor2approximation|christofidesandfactor2> <testdatafile> <max_iterations> <gap_threshold> <epsilon> <current|best|5pct|1pct> <static|lbdecay|itdecay|itincrease> <epsilon_decay_interval> <epsilon_decay_multiplier> [<check_point>] [<debug|info|error>]" )
-        show_info( "<christofides|factor2approximation|christofidesandfactor2> strategy engine to be used in experiment." )
+        show_info( "jgvtspsolver.jl <christofides|factor2approximation|christofidesandfactor2> <testdatafile> <max_iterations> <gap_threshold> <epsilon> <current|best|5pct|1pct> <static|lbdecay|itdecay|itincrease> <epsilon_decay_interval> <epsilon_decay_multiplier> <2opt|none> <lagrangean|complementary> [<check_point>] [<debug|info|error>]" )
+        show_info( "<christofides|factor2approximation|christofidesandfactor2|nearestneighbor|farthestinsertion> strategy engine to be used in experiment." )
         show_info( "<testdatafile> path to test data file to be used" )
         show_info( "<max_iterations> maximn number of iterations" )
         show_info( "<gap_threshold> gap gap_threshold to be used in lagrangean_relaxation/christofides" )
         show_info( "<epsilon> epsilon value to be used in lagrangean_relaxation/christofides" )
         show_info( "<current|best|5pct|1pct> mi_function to be used to calculate mi parameter" )
-        show_info( "<static|lbdecay1|lbdecay2|itdecay|itincrease> strategy to update epsilon" )        
+        show_info( "<static|lbdecay1|lbdecay2|itdecay|itincrease> strategy to update epsilon" )
         show_info( "<epsilon_decay_interval> number of iterations without update to the lb that must pass before epsilon is updated" )
         show_info( "<epsilon_decay_multiplier> epsilon decay multiplier to be used by lbdecay and itdecay (can be > 1, but should be ideally between 0 and 1." )
+        show_info( "<2opt|none> local search algorithm" )
+        show_info( "<lagrangean|complementary> costs to be provided to the primal algorithms" )
         show_info( "[<check_point>] iteration check-point to show progress (default: max_iterations)" )
         show_info( "[<debug|info|error>] log level (default: info)" )
         show_info( " " )
@@ -97,7 +99,7 @@ function main(args)
 
     save_step(exp_id,"main","start","experiment")
 
-    if strategy in ["christofides", "factor2approximation", "christofidesandfactor2"]
+    if strategy in ["christofides", "factor2approximation", "christofidesandfactor2", "nearestneighbor", "farthestinsertion"]
         if length(args) < 7
             @error "Por favor informe os parâmetros para execução do experimento $strategy ou -help para a lista completa de opções."
             exit()
@@ -128,14 +130,26 @@ function main(args)
         end
 
         exp_params["epsilon_decay_interval"] = args[8]
-        if !check_float_param( exp_params["epsilon_decay_interval"], 0.00001, 0.9 )
-            show_error("O parâmetro epsilon_strategy precisa estar entre os valores 0.000001 e 0.9" )
+        if !check_int_param( exp_params["epsilon_decay_interval"], 1, 1000 )
+            show_error("O parâmetro epsilon_decay_interval precisa estar entre os valores 1 e 1000")
             exit()
         end
 
         exp_params["epsilon_decay_multiplier"] = args[9] 
-        if !check_int_param( exp_params["epsilon_decay_multiplier"], 2, 50 )
-            show_error("O parâmetro epsilon_strategy precisa estar entre os valores 2 e 50" )
+        if !check_float_param( exp_params["epsilon_decay_multiplier"], 0.000001, 2.0)
+            show_error("O parâmetro epsilon_decay_multiplier precisa estar entre os valores 0.000001 e 1, mas pode receber valores até 2" )
+            exit()
+        end
+
+        exp_params["local_search"] = args[10] 
+        if !check_opt_param( exp_params["local_search"], "2opt|none" )
+            show_error("O parâmetro local_search precisa ser uma das opções: 2opt|none")
+            exit()
+        end
+
+        exp_params["primal_input"] = args[11] 
+        if !check_opt_param( exp_params["primal_input"], "lagrangean|complementary" )
+            show_error("O parâmetro primal_input precisa ser uma das opções: lagrangean|complementary")
             exit()
         end
 
@@ -145,13 +159,15 @@ function main(args)
         show_info("epsilon_strategy: ", exp_params["epsilon_strategy"])
         show_info("epsilon_decay_interval: ", exp_params["epsilon_decay_interval"])
         show_info("epsilon_decay_multiplier: ", exp_params["epsilon_decay_multiplier"])
+        show_info("local_search: ", exp_params["local_search"])
+        show_info("primal_input: ", exp_params["primal_input"])
     
-        if length(args) > 9
-            exp_params["check_point"] = args[10] 
+        if length(args) > 11
+            exp_params["check_point"] = args[12] 
             show_info("check_point: ", exp_params["check_point"])
         end
-        if length(args) > 10
-            exp_params["log_level"] = args[11]             
+        if length(args) > 12
+            exp_params["log_level"] = args[13]             
             show_info("log_level: ", exp_params["log_level"])
             set_loglevel(exp_params["log_level"],exp_id)
         end

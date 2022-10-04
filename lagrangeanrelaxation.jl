@@ -14,6 +14,7 @@ include("commons.jl")
 include("christofides.jl")
 include("factor2approximation.jl")
 include("onetree.jl")
+include("heuristics.jl")
 
 #
 # Function lagrangean_relaxation
@@ -28,6 +29,8 @@ function lagrangean_relaxation(exp_params)
     exp_id = exp_params["exp_id"]
     testdatafile = exp_params["testdatafile"]
     ub_algorithm = exp_params["ub_algorithm"]
+    local_search = exp_params["local_search"]
+    primal_input = exp_params["primal_input"]
     max_iterations = parse(Int64, exp_params["max_iterations"])
     gap_threshold = parse(Float64, exp_params["gap_threshold"])
     epsilon = parse(Float64, exp_params["epsilon"])
@@ -111,6 +114,24 @@ function lagrangean_relaxation(exp_params)
         ub_solution = undef
         second_ub_solution = undef # only used if ub_algorithm is "christofidesandfactor2"
         current_upper_bound = Inf
+        #primal_input_cost_matrix = undef
+
+        #if primal_input == "lagrangean"
+        #    primal_input_cost_matrix = current_cost_matrix
+        #elseif primal_input === "complementary"
+        #    incidence = zeros(n, n)
+
+        #    for edge in edges(one_tree_sol)
+        #        s, d = src(edge), dst(edge)
+            
+        #        incidence[s, d] = 1
+        #        incidence[d, s] = 1
+        #    end
+
+        #    current_cost_matrix =  original_cost_matrix .* (1 .- incidence)
+        #else
+        #    show_error("Invalid local search algorithm \"local_search\".")
+        #end
 
         # getting upper bound
         if ub_algorithm == "christofides"
@@ -123,6 +144,10 @@ function lagrangean_relaxation(exp_params)
             # 
             ub_solution = unite_and_hamilton(exp_id, iteration, current_cost_matrix, n)
             second_ub_solution = factor_2_approximation(exp_id, iteration, current_cost_matrix, n) 
+        elseif ub_algorithm == "nearestneighbor"
+            ub_solution = nearest_neighbor(current_cost_matrix, n)
+        elseif ub_algorithm == "farthestinsertion"
+            ub_solution = farthest_insertion(current_cost_matrix, n)
         else
             show_error("Invalid upper bound algorithm \"$ub_algorithm\".")
         end
@@ -141,14 +166,13 @@ function lagrangean_relaxation(exp_params)
             current_upper_bound = calculate_graph_cost(ub_solution, original_cost_matrix, n)
         end
 
-        # getting upper bound, christofides produces feasible solutions
-        #save_step(exp_id,"lagrangean_relaxation:unite_and_hamilton","start","iteration_$iteration")
-        #christofides_sol = unite_and_hamilton(exp_id, iteration, current_cost_matrix, n)
-        #save_step(exp_id,"lagrangean_relaxation:unite_and_hamilton","finish","iteration_$iteration")
-
-        #save_step(exp_id,"lagrangean_relaxation:calculate_graph_cost:upper_bound","start","iteration_$iteration")
-        #current_upper_bound = calculate_graph_cost(christofides_sol, original_cost_matrix, n) 
-        #save_step(exp_id,"lagrangean_relaxation:calculate_graph_cost:upper_bound","finish","iteration_$iteration")
+        if local_search == "2opt"
+            ub_solution, current_upper_bound = two_opt(ub_solution, current_cost_matrix, n)
+        elseif local_search == "none"
+            # does nothing
+        else
+            show_error("Invalid local search algorithm \"local_search\".")
+        end
 
         # getting lower bound
         save_step(exp_id,"lagrangean_relaxation:one_tree_graph","start","iteration_$iteration")
@@ -220,6 +244,7 @@ function lagrangean_relaxation(exp_params)
             "experiment_id" => exp_id,
             "instance" => testdatafile,
             "upper_bound_algorithm" => ub_algorithm,
+            "local_search" => local_search,
             "max_iterations" => max_iterations,
             "gap_threshold" => gap_threshold,
             "mi_function" => mi_function, 
