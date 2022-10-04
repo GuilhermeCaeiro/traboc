@@ -183,7 +183,7 @@ function two_opt_iteration(route, cost, cost_matrix, n)
     return route, cost
 end
 
-# based on the available solution at
+# based on the solution available at
 # https://stackoverflow.com/questions/53275314/2-opt-algorithm-to-solve-the-travelling-salesman-problem-in-python
 # from user Fradge
 function two_opt(graph, cost_matrix, n; max_iterations = 1000, cost = Inf)
