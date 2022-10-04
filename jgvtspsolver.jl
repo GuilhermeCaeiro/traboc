@@ -39,12 +39,12 @@ function main(args)
     set_logging(Logging.Info,exp_id)
 
     show_info("********************************************************************")
-    show_info("JGV Solver For Travelling Sallesman problem ")
+    show_info("JGV Solver for the Travelling Salesman Problem ")
     show_info("********************************************************************")
     show_info("Trabalho para a disciplina de Otimização Combinatória - 2022p2")
-    show_info("João Pedro")
-    show_info("Guilherme Caeiro")
-    show_info("Victor Xavier")
+    show_info("João Pedro Souza - joaosouza@cos.ufrj.br")
+    show_info("Guilherme Caeiro de Mattos - mattosgc@cos.ufrj.br")
+    show_info("Victor de Almeida Xavier - victorx@cos.ufrj.br")
     show_info("********************************************************************")
 
     strategy = args[1]
@@ -67,12 +67,12 @@ function main(args)
         show_info( "[<debug|info|error>] log level (default: info)" )
         show_info( " " )
         show_info( "Solver based strategies:" )
-        show_info( "jgvtspsolver.jl <gurobi|glpk> <testdatafile> <max_iterations> [<use_combs>] [<none|christofides|factor2approximation|christofidesandfactor2>] [<check_point>] [<debug|info|error>]" )
+        show_info( "jgvtspsolver.jl <gurobi|glpk> <testdatafile> <max_iterations> [<use_combs>] [<none|christofides|factor2approximation|christofidesandfactor2>[,<gap_threshold>,<epsilon>,<current|best|5pct|1pct>,<static|lbdecay|itdecay|itincrease>,<epsilon_decay_interval>,<epsilon_decay_multiplier>]] [<check_point>] [<debug|info|error>]" )
         show_info( "<gurobi|glpk> solver engine to be used in experiment." )
         show_info( "<testdatafile> path to test data file to be used" )
         show_info( "<max_iterations> maximn number of iterations" )
         show_info( "[<use_combs>] true indicates to use comb (relax and cut) (default: false)" )
-        show_info( "[<none|christofides|factor2approximation|christofidesandfactor2>[,<gap_threshold>,<epsilon>,<current|best|5pct|1pct>,<static|lbdecay|itdecay|itincrease>,<epsilon_decay_interval>,<epsilon_decay_multiplier>]] lagrangean_relaxation preprocess (default: none)" )
+        show_info( "[<none|christofides|factor2approximation|christofidesandfactor2>] lagrangean_relaxation preprocess (default: none)" )
         show_info( "[<check_point>] iteration check-point to show progress (default: max_iterations)" )
         show_info( "[<debug|info|error>] log level (default: info)" )
         show_info( " " )
@@ -199,58 +199,64 @@ function main(args)
         exp_params["pre_solver"] = "none"
         if length(args) > 4
             pre_solver_params = split(args[5],",")
-            if length(pre_solver_params) < 7
-                show_error("Por favor informe os parâmetros adicionais para o pre-solver seperados por vírgula: <gap_threshold>,<epsilon>,<current|best|5pct|1pct>,<static|lbdecay|itdecay|itincrease>,<epsilon_decay_interval>,<epsilon_decay_multiplier>")
-                exit()
-            end
+            if pre_solver_params[1] != "none"
+                if length(pre_solver_params) < 7
+                    show_error("Por favor informe os parâmetros adicionais para o pre-solver seperados por vírgula: <gap_threshold>,<epsilon>,<current|best|5pct|1pct>,<static|lbdecay|itdecay|itincrease>,<epsilon_decay_interval>,<epsilon_decay_multiplier>")
+                    exit()
+                end
 
-            exp_params["pre_solver"] = pre_solver_params[1]
-            pre_solver = exp_params["pre_solver"]
+                exp_params["pre_solver"] = pre_solver_params[1]
+                pre_solver = exp_params["pre_solver"]
 
-            exp_params["gap_threshold"] = pre_solver_params[2]
-            if !check_float_param( exp_params["gap_threshold"], 0.000001, 0.1 )
-                show_error("O parâmetro $pre_solver:gap_threshold precisa estar entre os valores 0.000001 e 0.1" )
-                exit()
+                exp_params["gap_threshold"] = pre_solver_params[2]
+                if !check_float_param( exp_params["gap_threshold"], 0.000001, 0.1 )
+                    show_error("O parâmetro $pre_solver:gap_threshold precisa estar entre os valores 0.000001 e 0.1" )
+                    exit()
+                end
+        
+                exp_params["epsilon"] = pre_solver_params[3]
+                if !check_int_param( exp_params["epsilon"], 1, 2 )
+                    show_error("O parâmetro $pre_solver:epsilon precisa estar entre os valores inteiros 1 e 2" )
+                    exit()
+                end
+        
+                exp_params["mi_function"] = pre_solver_params[4]
+                if !check_opt_param( exp_params["mi_function"], "current|best|5pct|1pct" )
+                    show_error("O parâmetro $pre_solver:mi_function precisa ser uma das opções: current|best|5pct|1pct" )
+                    exit()
+                end
+        
+                exp_params["epsilon_strategy"] = pre_solver_params[5]
+                if !check_opt_param( exp_params["epsilon_strategy"], "static|lbdecay1|lbdecay2|itdecay|itincrease" )
+                    show_error("O parâmetro $pre_solver:epsilon_strategy precisa ser uma das opções: static|lbdecay1|lbdecay2|itdecay|itincrease" )
+                    exit()
+                end
+        
+                exp_params["epsilon_decay_interval"] = pre_solver_params[6]
+                if !check_float_param( exp_params["epsilon_decay_interval"], 0.00001, 0.9 )
+                    show_error("O parâmetro $pre_solver:epsilon_strategy precisa estar entre os valores 0.000001 e 0.9" )
+                    exit()
+                end
+        
+                exp_params["epsilon_decay_multiplier"] = pre_solver_params[7]
+                if !check_int_param( exp_params["epsilon_decay_multiplier"], 2, 50 )
+                    show_error("O parâmetro $pre_solver:epsilon_decay_multiplier precisa estar entre os valores 2 e 50" )
+                    exit()
+                end
+        
+                show_info("pre_solver: ", exp_params["pre_solver"])
+                show_info("$pre_solver:gap_threshold: ", exp_params["gap_threshold"])
+                show_info("$pre_solver:epsilon: ", exp_params["epsilon"])
+                show_info("$pre_solver:mi_function: ", exp_params["mi_function"])
+                show_info("$pre_solver:epsilon_strategy: ", exp_params["epsilon_strategy"])
+                show_info("$pre_solver:epsilon_decay_interval: ", exp_params["epsilon_decay_interval"])
+                show_info("$pre_solver:epsilon_decay_multiplier: ", exp_params["epsilon_decay_multiplier"])
+
+            else
+                exp_params["pre_solver"] = args[5]
+                show_info("pre_solver: ", exp_params["pre_solver"])
             end
-    
-            exp_params["epsilon"] = pre_solver_params[3]
-            if !check_int_param( exp_params["epsilon"], 1, 2 )
-                show_error("O parâmetro $pre_solver:epsilon precisa estar entre os valores inteiros 1 e 2" )
-                exit()
-            end
-    
-            exp_params["mi_function"] = pre_solver_params[4]
-            if !check_opt_param( exp_params["mi_function"], "current|best|5pct|1pct" )
-                show_error("O parâmetro $pre_solver:mi_function precisa ser uma das opções: current|best|5pct|1pct" )
-                exit()
-            end
-    
-            exp_params["epsilon_strategy"] = pre_solver_params[5]
-            if !check_opt_param( exp_params["epsilon_strategy"], "static|lbdecay1|lbdecay2|itdecay|itincrease" )
-                show_error("O parâmetro $pre_solver:epsilon_strategy precisa ser uma das opções: static|lbdecay1|lbdecay2|itdecay|itincrease" )
-                exit()
-            end
-    
-            exp_params["epsilon_decay_interval"] = pre_solver_params[6]
-            if !check_float_param( exp_params["epsilon_decay_interval"], 0.00001, 0.9 )
-                show_error("O parâmetro $pre_solver:epsilon_strategy precisa estar entre os valores 0.000001 e 0.9" )
-                exit()
-            end
-    
-            exp_params["epsilon_decay_multiplier"] = pre_solver_params[7]
-            if !check_int_param( exp_params["epsilon_decay_multiplier"], 2, 50 )
-                show_error("O parâmetro $pre_solver:epsilon_decay_multiplier precisa estar entre os valores 2 e 50" )
-                exit()
-            end
-    
-            show_info("$pre_solver:pre_solver: ", exp_params["pre_solver"])
-            show_info("$pre_solver:gap_threshold: ", exp_params["gap_threshold"])
-            show_info("$pre_solver:epsilon: ", exp_params["epsilon"])
-            show_info("$pre_solver:mi_function: ", exp_params["mi_function"])
-            show_info("$pre_solver:epsilon_strategy: ", exp_params["epsilon_strategy"])
-            show_info("$pre_solver:epsilon_decay_interval: ", exp_params["epsilon_decay_interval"])
-            show_info("$pre_solver:epsilon_decay_multiplier: ", exp_params["epsilon_decay_multiplier"])
-    
+            
         end
 
         exp_params["check_point"] = exp_params["max_iterations"] 
