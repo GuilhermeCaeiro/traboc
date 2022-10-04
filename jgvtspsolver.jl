@@ -39,12 +39,12 @@ function main(args)
     set_logging(Logging.Info,exp_id)
 
     show_info("********************************************************************")
-    show_info("JGV Solver For Travelling Sallesman problem ")
+    show_info("JGV Solver for the Travelling Salesman Problem ")
     show_info("********************************************************************")
     show_info("Trabalho para a disciplina de Otimização Combinatória - 2022p2")
-    show_info("João Pedro")
-    show_info("Guilherme Caeiro")
-    show_info("Victor Xavier")
+    show_info("João Pedro Souza - joaosouza@cos.ufrj.br")
+    show_info("Guilherme Caeiro de Mattos - mattosgc@cos.ufrj.br")
+    show_info("Victor de Almeida Xavier - victorx@cos.ufrj.br")
     show_info("********************************************************************")
 
     strategy = args[1]
