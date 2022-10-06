@@ -153,7 +153,7 @@ function lazy(exp_params)
             return
         end
 
-        if exp_params["use_combs"] == "true"
+        if exp_params["rac_strategy"] in "both|combs"
             @debug "generating combs..."
             @debug "1 - c = ", c
             T = [pop!(c)]

@@ -76,11 +76,11 @@ function one_tree_graph(exp_id, step_id, cost_matrix, num_nodes)
     #println(cost_matrix)
     #println(nv(mst))
 
-    plt = gplot(mst, nodelabel=1:nv(mst))
-    #draw(PNG(string("./work/",exp_id,"/",step_id,"_one_tree.png"), 16cm, 16cm), plt)
-    #@debug begin
-    #    display(plt)
-    #end
+    @debug begin
+        plt = gplot(mst, nodelabel=1:nv(mst))
+        draw(PNG(string("./work/",exp_id,"/",step_id,"_one_tree.png"), 16cm, 16cm), plt)
+        display(plt)
+    end
 
     @debug "one_tree_graph...done"
 

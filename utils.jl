@@ -257,7 +257,7 @@ end
 # num_vertices -> number of nodes in the graph
 # Returns
 # match_graph -> graph with match vertices
-function min_weight_perfect_matching(exp_id, graph, cost_matrix) 
+function min_weight_perfect_matching(exp_id, step_id, graph, cost_matrix) 
 
     @debug "min_weight_perfect_matching..."
 
@@ -286,7 +286,7 @@ function min_weight_perfect_matching(exp_id, graph, cost_matrix)
 
     @debug begin
         plt = gplot(match_graph, nodelabel=1:nv(match_graph))
-        draw(PNG(string("./work/",exp_id,"/match_graph.png"), 16cm, 16cm), plt)    
+        draw(PNG(string("./work/",exp_id,"/",step_id,"_match_graph.png"), 16cm, 16cm), plt)    
         display(plt)
     end
 
