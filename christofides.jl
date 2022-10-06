@@ -63,7 +63,7 @@ function unite_and_hamilton(exp_id, step_id, cost_matrix, num_vertices)
     subg, subgc, index = count_degree_and_form_subgraph(exp_id, step_id, graph, cost)
     save_step(exp_id,"unite_and_hamilton:count_degree_and_form_subgraph","finish","step") 
 
-    mw = min_weight_perfect_matching(exp_id, subg, subgc)
+    mw = min_weight_perfect_matching(exp_id, step_id, subg, subgc)
     # g U mw
     for e in edges(mw)
         add_edge!(graph, index[src(e)], index[dst(e)])

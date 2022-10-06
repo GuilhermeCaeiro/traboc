@@ -21,7 +21,7 @@ include("lagrangeanrelaxation.jl")
 include("lazytsp.jl")
 
 function save_params(exp_params)
-    parameters = ["exp_id" "strategy" "testdatafile" "max_iterations" "ub_algorithm" "gap_threshold" "epsilon" "mi_function" "epsilon_strategy" "epsilon_decay_interval" "epsilon_decay_multiplier" "check_point" "log_level" "use_combs" "pre_solver" "lower_bound" "upper_bound"]
+    parameters = ["exp_id" "strategy" "testdatafile" "max_iterations" "ub_algorithm" "gap_threshold" "epsilon" "mi_function" "epsilon_strategy" "epsilon_decay_interval" "epsilon_decay_multiplier" "check_point" "log_level" "rac_strategy" "pre_solver" "lower_bound" "upper_bound"]
     params_data = [ string(get!(exp_params,param_key,"-")) for param_key in parameters ]
     if !isfile("./work/experiments.csv")
         hdf = DataFrame(parameters, :auto)
@@ -67,11 +67,11 @@ function main(args)
         show_info( "[<debug|info|error>] log level (default: info)" )
         show_info( " " )
         show_info( "Solver based strategies:" )
-        show_info( "jgvtspsolver.jl <gurobi|glpk> <testdatafile> <max_iterations> [<use_combs>] [<none|christofides|factor2approximation|christofidesandfactor2>[,<gap_threshold>,<epsilon>,<current|best|5pct|1pct>,<static|lbdecay|itdecay|itincrease>,<epsilon_decay_interval>,<epsilon_decay_multiplier>]] [<check_point>] [<debug|info|error>]" )
+        show_info( "jgvtspsolver.jl <gurobi|glpk> <testdatafile> <max_iterations> [<combs|secs|both>] [<none|christofides|factor2approximation|christofidesandfactor2>[,<gap_threshold>,<epsilon>,<current|best|5pct|1pct>,<static|lbdecay|itdecay|itincrease>,<epsilon_decay_interval>,<epsilon_decay_multiplier>]] [<check_point>] [<debug|info|error>]" )
         show_info( "<gurobi|glpk> solver engine to be used in experiment." )
         show_info( "<testdatafile> path to test data file to be used" )
         show_info( "<max_iterations> maximn number of iterations" )
-        show_info( "[<use_combs>] true indicates to use comb (relax and cut) (default: false)" )
+        show_info( "[<combs|secs|both>] relax-and-cut option (default: both)" )
         show_info( "[<none|christofides|factor2approximation|christofidesandfactor2>] lagrangean_relaxation preprocess (default: none)" )
         show_info( "[<check_point>] iteration check-point to show progress (default: max_iterations)" )
         show_info( "[<debug|info|error>] log level (default: info)" )
@@ -190,10 +190,16 @@ function main(args)
             exit()
         end 
 
-        exp_params["use_combs"] = "false"
+        exp_params["rac_strategy"] = "both"
         if length(args) > 3
-            exp_params["use_combs"] = args[4] 
-            show_info("use_combs: ", exp_params["use_combs"])
+            exp_params["rac_strategy"] = args[4] 
+
+            if !check_opt_param( exp_params["rac_strategy"], "combs|secs|both" )
+                show_error("O parâmetro rac_strategy precisa estar entre as opções: combs|secs|both" )
+                exit()
+            end
+
+            show_info("rac_strategy: ", exp_params["rac_strategy"])
         end
 
         exp_params["pre_solver"] = "none"
