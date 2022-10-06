@@ -24,3 +24,10 @@ exp_id,strategy,testdatafile,max_iterations,ub_algorithm,gap_threshold,epsilon,m
 20221003232723,christofides,./input/burma14.xml,1000,christofides,0.00001,2,1pct,lbdecay1,50,0.5,100,info,-,-,-,-
 20221003233102,christofides,./input/burma14.xml,1000,christofides,0.00001,2,1pct,lbdecay1,50,0.5,100,info,-,-,-,-
 20221003233831,christofides,./input/burma14.xml,1000,christofides,0.00001,2,1pct,lbdecay1,50,0.5,100,info,-,-,-,-
+20221005203504,christofides,./input/burma14.xml,1000,christofides,0.00001,2,1pct,lbdecay1,50,0.5,100,info,-,-,-,-
+20221005205131,christofides,./input/burma14.xml,1000,christofides,0.00001,2,1pct,lbdecay1,50,0.5,100,info,-,-,-,-
+20221006144403,christofides,./input/burma14.xml,1000,christofides,0.00001,2,1pct,lbdecay1,50,0.5,100,info,-,-,-,-
+20221006144748,christofides,./input/burma14.xml,1000,christofides,0.00001,2,1pct,lbdecay1,50,0.5,100,info,-,-,-,-
+20221006145127,christofides,./input/burma14.xml,1000,christofides,0.00001,2,1pct,lbdecay1,50,0.5,100,info,-,-,-,-
+20221006145426,christofides,./input/burma14.xml,1000,christofides,0.00001,2,1pct,lbdecay1,50,0.5,100,info,-,-,-,-
+20221006145854,christofides,./input/burma14.xml,1000,christofides,0.00001,2,1pct,lbdecay1,50,0.5,100,info,-,-,-,-

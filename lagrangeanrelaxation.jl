@@ -170,7 +170,8 @@ function lagrangean_relaxation(exp_params)
         end
 
         if local_search == "2opt"
-            ub_solution, current_upper_bound = two_opt(ub_solution, primal_input_cost_matrix, n)
+            #ub_solution, current_upper_bound = two_opt(ub_solution, primal_input_cost_matrix, n)
+            ub_solution, current_upper_bound = two_opt(ub_solution, original_cost_matrix, n)
         elseif local_search == "none"
             # does nothing
         else
