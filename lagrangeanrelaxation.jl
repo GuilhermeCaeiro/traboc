@@ -86,6 +86,8 @@ function lagrangean_relaxation(exp_params)
 
     total_iterations = 0
     experiment_start_time = get_time_in_ms()
+    is_optimal = false
+    stop_condition = ""
 
     save_step(exp_id,"lagrangean_relaxation:iterations","start","step")
 
@@ -248,8 +250,8 @@ function lagrangean_relaxation(exp_params)
             "current_u" => current_u,
             "new_u" => u,
             "G" => G,
-            "is_optimal" => false,
-            "stop_condition" => "",
+            "is_optimal" => is_optimal,
+            "stop_condition" => stop_condition,
             "iteration_start_time" => iteration_start_time,
             "iteration_finish_time" => iteration_finish_time,
             "total_iteration_time" => iteration_finish_time - iteration_start_time,
@@ -260,29 +262,32 @@ function lagrangean_relaxation(exp_params)
 
         # stopping criteria
         if optimality_gap == 0
-            iteration_data["is_optimal"] = true
-            iteration_data["stop_condition"] = "Optimal solution found. UB = LB."
+            is_optimal = true
+            stop_condition = "Optimal solution found. UB = LB."
         elseif optimality_gap <= gap_threshold
-            iteration_data["is_optimal"] = true
-            iteration_data["stop_condition"] = "Acceptable solution found. Gap threshold reached."
+            is_optimal = true
+            stop_condition = "Acceptable solution found. Gap threshold reached."
         elseif denominator == 0
             feasible = check_hamiltonian_cycle(one_tree_sol)
 
             # if the solution is feasible and the denominator is zero, that solution is optimal
             if feasible
-                iteration_data["is_optimal"] = true
-                iteration_data["stop_condition"] = "Optimal solution found. The denominator do the subgradient is zero and the solution is feasible."
+                is_optimal = true
+                stop_condition = "Optimal solution found. The denominator do the subgradient is zero and the solution is feasible."
             else
-                iteration_data["is_optimal"] = false
-                iteration_data["stop_condition"] = "Lower bound found. Gap threshold reached. The denominator do the subgradient is zero, but the solution is unfeasible."
+                is_optimal = false
+                stop_condition = "Lower bound found. Gap threshold reached. The denominator do the subgradient is zero, but the solution is unfeasible."
             end
         elseif mi < epsilon_min
-            iteration_data["stop_condition"] = "Lower bound found. mi too small (mi < epsilon_min)."
+            stop_condition = "Lower bound found. mi too small (mi < epsilon_min)."
         elseif epsilon < epsilon_min
-            iteration_data["stop_condition"] = "Lower bound found. epsilon too small (epsilon < epsilon_min)."
+            stop_condition = "Lower bound found. epsilon too small (epsilon < epsilon_min)."
         elseif iteration == max_iterations
-            iteration_data["stop_condition"] = "Maximum number of iterations reached"
+            stop_condition = "Maximum number of iterations reached"
         end
+
+        iteration_data["is_optimal"] = is_optimal
+        iteration_data["stop_condition"] = stop_condition
 
         stop_iterating = false
         if iteration_data["stop_condition"] != ""
@@ -329,17 +334,32 @@ function lagrangean_relaxation(exp_params)
 
     save_step(exp_id,"lagrangean_relaxation:iterations","finish","step")
 
-    #println("ubs ", upper_bounds)
-    #println("lbs ", lower_bounds)
-    #println("gaps ", gaps)
-    show_result(exp_id, "lagrangean_relaxation", "min_gap ", minimum(gaps))
-    show_result(exp_id, "lagrangean_relaxation", "min_upper_bound ", minimum(upper_bounds))
-    show_result(exp_id, "lagrangean_relaxation", "max_lower_bound ", maximum(lower_bounds))
-    show_result(exp_id, "lagrangean_relaxation", "optimality_gap ", optimality_gap)
-    show_result(exp_id, "lagrangean_relaxation", "iterations ran ", total_iterations)
+    @debug "ubs ", upper_bounds
+    @debug "lbs ", lower_bounds
+    @debug "gaps ", gaps
+
+    results = Dict(
+        "exp_id" => exp_id,
+        "method" => "lagrangean_relaxation",
+        "status" => "-",
+        "objective_value" => "-",
+        "min_gap" => minimum(gaps),
+        "current_lower_bound" => current_lower_bound,
+        "best_lower_bound" => best_lower_bound,
+        "min_upper_bound" => minimum(upper_bounds),
+        "max_lower_bound" => maximum(lower_bounds),
+        "optimality_gap" => optimality_gap,
+        "iterations_ran" => total_iterations,
+        "is_optimal" => is_optimal,
+        "stop_condition" => stop_condition
+    )
+
+    for (key, value) in results
+        show_result(exp_id, "lagrangean_relaxation", string(key," "), string(value))
+    end
 
     save_step(exp_id,"lagrangean_relaxation","finish","algorithm")
-    return maximum(lower_bounds), minimum(upper_bounds)
+    return results
 end
 
 #lagrangean_relaxation("1", "", 1000, 1.0)

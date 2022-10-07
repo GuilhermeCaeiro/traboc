@@ -203,19 +203,47 @@ function lazy(exp_params)
     optimize!(lazy_model)
     @debug "optimizing...done"
 
+    is_optimal = false
+    stop_condition = ""
     status = MOI.get(lazy_model, MOI.TerminationStatus())
     if status == MOI.OPTIMAL
         # Uhuu! we solved the problem!
         @debug "Problem solved: MOI.OPTIMAL"
+        is_optimal = true
+        stop_condition = "Problem solved!"
         show_info("Problem solved!")
         show_info(string("Objective value found:",objective_value(lazy_model)))
         plot(exp_id,lazy_model[:x])
     else
         @debug "Problem remains: $status"
+        stop_condition = "Aborted!"
     end
 
-    show_result(exp_id, "lazy", "status ", status)
-    show_result(exp_id, "lazy", "objective_value ", objective_value(lazy_model))
+    total_iterations = simplex_iterations(lazy_model) + barrier_iterations(lazy_model)
+    min_gap = relative_gap(lazy_model)
+
+    results = Dict(
+        "exp_id" => exp_id,
+        "method" => "lazy",
+        "status" => status,
+        "objective_value" => objective_value(lazy_model),
+        "min_gap" => min_gap,
+        "current_lower_bound" => "-",
+        "best_lower_bound" => "-",
+        "min_upper_bound" => "-",
+        "max_lower_bound" => "-",
+        "optimality_gap" => "-",
+        "iterations_ran" => total_iterations,
+        "is_optimal" => is_optimal,
+        "stop_condition" => stop_condition
+    )
+
+    for (key, value) in results
+        show_result(exp_id, "lazy", string(key," "), string(value))
+    end
+
+    show_info("Solution Summary Report:")
+    show_info(string(solution_summary(lazy_model,verbose=true)))
 
     save_step(exp_id,"lazy","finish","algorithm")
 

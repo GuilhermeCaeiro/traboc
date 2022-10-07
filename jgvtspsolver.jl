@@ -31,6 +31,19 @@ function save_params(exp_params)
     CSV.write("./work/experiments.csv", df; append=true)
 end
 
+function save_experiment_summary(results)
+    summary_items = ["exp_id" "method" "status" "objective_value" "min_gap" "current_lower_bound" "best_lower_bound" "min_upper_bound" "max_lower_bound" "optimality_gap" "iterations_ran" "is_optimal" "stop_condition"]
+    summary_data = [ string(get!(results,key,"-")) for key in summary_items ]
+     
+    if !isfile("./work/experiments_summary.csv")
+        hdf = DataFrame(summary_items, :auto)
+        CSV.write("./work/experiments_summary.csv", hdf; append=true)    
+    end
+    df = DataFrame(summary_data, :auto)
+    CSV.write("./work/experiments_summary.csv", df; append=true)
+end
+
+
 function main(args)
  
     exp_id = new_experiment() 
@@ -177,8 +190,12 @@ function main(args)
 
         @debug "lagrangean_relaxation..." 
         #execute lagrangean_relaxation with exp_params 
-        lagrangean_relaxation(exp_params)
+        results = lagrangean_relaxation(exp_params)
         @debug "lagrangean_relaxation...done"
+
+        @debug "saving summary..." 
+        save_experiment_summary(results)
+        @debug "saving summary...done" 
 
         show_info("Running experiment $exp_id...done")
         show_info("********************************************************************")
@@ -289,16 +306,20 @@ function main(args)
         if exp_params["pre_solver"] in ["christofides", "factor2approximation", "christofidesandfactor2"]
             exp_params["ub_algorithm"] = exp_params["pre_solver"]
             @debug "lagrangean_relaxation as pre solver..." 
-            lower, upper = lagrangean_relaxation(exp_params)
+            results = lagrangean_relaxation(exp_params)            
             @debug "lagrangean_relaxation as pre solver...done"
-            exp_params["lower_bound"] = string(lower)
-            exp_params["upper_bound"] = string(upper)
+            exp_params["lower_bound"] = results["lower_bound"]
+            exp_params["upper_bound"] = results["upper_bound"]
         end
 
         #execute solver with lazy constraints passing exp_params
         @debug "lazy..." 
-        lazy(exp_params)
+        results = lazy(exp_params)
         @debug "lazy...done"
+
+        @debug "saving summary..." 
+        save_experiment_summary(results)
+        @debug "saving summary...done" 
 
         show_info("Running experiment $exp_id...done")
         show_info("********************************************************************")
