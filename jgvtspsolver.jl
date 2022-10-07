@@ -80,7 +80,7 @@ function main(args)
         show_info( "[<debug|info|error>] log level (default: info)" )
         show_info( " " )
         show_info( "Solver based strategies:" )
-        show_info( "jgvtspsolver.jl <gurobi|glpk> <testdatafile> <max_iterations> [<combs|secs|both>] [<none|christofides|factor2approximation|christofidesandfactor2>[;<gap_threshold>;<epsilon>;<current|best|5pct|1pct>;<static|lbdecay|itdecay|itincrease>;<epsilon_decay_interval>;<epsilon_decay_multiplier>;<2opt|none>;<lagrangean|complementary>]] [<check_point>] [<debug|info|error>]" )
+        show_info( "jgvtspsolver.jl <gurobi|glpk> <testdatafile> <max_iterations> [<combs|secs|both>] [<none|christofides|factor2approximation|christofidesandfactor2>[,<gap_threshold>,<epsilon>,<current|best|5pct|1pct>,<static|lbdecay|itdecay|itincrease>,<epsilon_decay_interval>,<epsilon_decay_multiplier>,<2opt|none>,<lagrangean|complementary>]] [<check_point>] [<debug|info|error>]" )
         show_info( "<gurobi|glpk> solver engine to be used in experiment." )
         show_info( "<testdatafile> path to test data file to be used" )
         show_info( "<max_iterations> maximn number of iterations" )
@@ -256,14 +256,14 @@ function main(args)
                 end
         
                 exp_params["epsilon_decay_interval"] = pre_solver_params[6]
-                if !check_float_param( exp_params["epsilon_decay_interval"], 0.00001, 0.9 )
-                    show_error("O parâmetro $pre_solver:epsilon_strategy precisa estar entre os valores 0.000001 e 0.9" )
+                if !check_int_param( exp_params["epsilon_decay_interval"], 1, 1000 )
+                    show_error("O parâmetro $pre_solver:epsilon_strategy precisa estar entre os valores 1 e 1000" )
                     exit()
                 end
         
                 exp_params["epsilon_decay_multiplier"] = pre_solver_params[7]
-                if !check_int_param( exp_params["epsilon_decay_multiplier"], 2, 50 )
-                    show_error("O parâmetro $pre_solver:epsilon_decay_multiplier precisa estar entre os valores 2 e 50" )
+                if !check_float_param( exp_params["epsilon_decay_multiplier"], 0.000001, 2.0 )
+                    show_error("O parâmetro $pre_solver:epsilon_decay_multiplier precisa estar entre os valores 0.000001 e 2.0" )
                     exit()
                 end
 
@@ -317,13 +317,13 @@ function main(args)
         exp_params["lower_bound"] = string(-Inf)
         exp_params["upper_bound"] = string(Inf)
 
-        if exp_params["pre_solver"] in ["christofides", "factor2approximation", "christofidesandfactor2"]
+        if exp_params["pre_solver"] in ["christofides", "factor2approximation", "christofidesandfactor2", "nearestneighbor", "farthestinsertion"]
             exp_params["ub_algorithm"] = exp_params["pre_solver"]
             @debug "lagrangean_relaxation as pre solver..." 
             results = lagrangean_relaxation(exp_params)            
             @debug "lagrangean_relaxation as pre solver...done"
-            exp_params["lower_bound"] = results["lower_bound"]
-            exp_params["upper_bound"] = results["upper_bound"]
+            exp_params["lower_bound"] = string(results["best_lower_bound"])
+            exp_params["upper_bound"] = string(results["best_upper_bound"])
         end
 
         #execute solver with lazy constraints passing exp_params
