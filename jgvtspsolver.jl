@@ -32,7 +32,7 @@ function save_params(exp_params)
 end
 
 function save_experiment_summary(results)
-    summary_items = ["exp_id" "method" "status" "objective_value" "min_gap" "current_lower_bound" "best_lower_bound" "min_upper_bound" "max_lower_bound" "optimality_gap" "iterations_ran" "is_optimal" "stop_condition"]
+    summary_items = ["exp_id" "method" "status" "objective_value" "min_gap" "current_lower_bound" "best_lower_bound" "current_upper_bound" "best_upper_bound" "min_upper_bound" "max_lower_bound" "optimality_gap" "iterations_ran" "is_optimal" "stop_condition"]
     summary_data = [ string(get!(results,key,"-")) for key in summary_items ]
      
     if !isfile("./work/experiments_summary.csv")
@@ -80,7 +80,7 @@ function main(args)
         show_info( "[<debug|info|error>] log level (default: info)" )
         show_info( " " )
         show_info( "Solver based strategies:" )
-        show_info( "jgvtspsolver.jl <gurobi|glpk> <testdatafile> <max_iterations> [<combs|secs|both>] [<none|christofides|factor2approximation|christofidesandfactor2>[,<gap_threshold>,<epsilon>,<current|best|5pct|1pct>,<static|lbdecay|itdecay|itincrease>,<epsilon_decay_interval>,<epsilon_decay_multiplier>]] [<check_point>] [<debug|info|error>]" )
+        show_info( "jgvtspsolver.jl <gurobi|glpk> <testdatafile> <max_iterations> [<combs|secs|both>] [<none|christofides|factor2approximation|christofidesandfactor2>[;<gap_threshold>;<epsilon>;<current|best|5pct|1pct>;<static|lbdecay|itdecay|itincrease>;<epsilon_decay_interval>;<epsilon_decay_multiplier>;<2opt|none>;<lagrangean|complementary>]] [<check_point>] [<debug|info|error>]" )
         show_info( "<gurobi|glpk> solver engine to be used in experiment." )
         show_info( "<testdatafile> path to test data file to be used" )
         show_info( "<max_iterations> maximn number of iterations" )
@@ -266,7 +266,19 @@ function main(args)
                     show_error("O parâmetro $pre_solver:epsilon_decay_multiplier precisa estar entre os valores 2 e 50" )
                     exit()
                 end
+
+                exp_params["local_search"] = pre_solver_params[8] 
+                if !check_opt_param( exp_params["local_search"], "2opt|none" )
+                    show_error("O parâmetro local_search precisa ser uma das opções: 2opt|none")
+                    exit()
+                end
         
+                exp_params["primal_input"] = pre_solver_params[9] 
+                if !check_opt_param( exp_params["primal_input"], "lagrangean|complementary" )
+                    show_error("O parâmetro primal_input precisa ser uma das opções: lagrangean|complementary")
+                    exit()
+                end
+                
                 show_info("pre_solver: ", exp_params["pre_solver"])
                 show_info("$pre_solver:gap_threshold: ", exp_params["gap_threshold"])
                 show_info("$pre_solver:epsilon: ", exp_params["epsilon"])
@@ -274,7 +286,9 @@ function main(args)
                 show_info("$pre_solver:epsilon_strategy: ", exp_params["epsilon_strategy"])
                 show_info("$pre_solver:epsilon_decay_interval: ", exp_params["epsilon_decay_interval"])
                 show_info("$pre_solver:epsilon_decay_multiplier: ", exp_params["epsilon_decay_multiplier"])
-
+                show_info("$pre_solver:local_search: ", exp_params["local_search"])
+                show_info("$pre_solver:primal_input: ", exp_params["primal_input"])
+        
             else
                 exp_params["pre_solver"] = args[5]
                 show_info("pre_solver: ", exp_params["pre_solver"])

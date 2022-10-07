@@ -346,6 +346,8 @@ function lagrangean_relaxation(exp_params)
         "min_gap" => minimum(gaps),
         "current_lower_bound" => current_lower_bound,
         "best_lower_bound" => best_lower_bound,
+        "current_upper_bound" => current_upper_bound,
+        "best_upper_bound" => best_upper_bound,
         "min_upper_bound" => minimum(upper_bounds),
         "max_lower_bound" => maximum(lower_bounds),
         "optimality_gap" => optimality_gap,
