@@ -21,7 +21,7 @@ include("lagrangeanrelaxation.jl")
 include("lazytsp.jl")
 
 function save_params(exp_params)
-    parameters = ["exp_id" "strategy" "testdatafile" "max_iterations" "ub_algorithm" "gap_threshold" "epsilon" "mi_function" "epsilon_strategy" "epsilon_decay_interval" "epsilon_decay_multiplier" "check_point" "log_level" "rac_strategy" "pre_solver" "lower_bound" "upper_bound"]
+    parameters = ["exp_id" "strategy" "testdatafile" "max_iterations" "ub_algorithm" "gap_threshold" "epsilon" "mi_function" "epsilon_strategy" "epsilon_decay_interval" "epsilon_decay_multiplier" "local_search" "primal_input" "check_point" "log_level" "rac_strategy" "pre_solver" "lower_bound" "upper_bound"]
     params_data = [ string(get!(exp_params,param_key,"-")) for param_key in parameters ]
     if !isfile("./work/experiments.csv")
         hdf = DataFrame(parameters, :auto)
