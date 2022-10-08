@@ -32,7 +32,7 @@ function save_params(exp_params)
 end
 
 function save_experiment_summary(results)
-    summary_items = ["exp_id" "method" "status" "objective_value" "min_gap" "current_lower_bound" "best_lower_bound" "current_upper_bound" "best_upper_bound" "min_upper_bound" "max_lower_bound" "optimality_gap" "iterations_ran" "is_optimal" "stop_condition"]
+    summary_items = ["exp_id" "method" "status" "objective_value" "min_gap" "current_lower_bound" "best_lower_bound" "current_upper_bound" "best_upper_bound" "min_upper_bound" "max_lower_bound" "optimality_gap" "iterations_ran" "is_optimal" "stop_condition" "start" "finish" "duration"]
     summary_data = [ string(get!(results,key,"-")) for key in summary_items ]
      
     if !isfile("./work/experiments_summary.csv")
@@ -143,15 +143,19 @@ function main(args)
         end
 
         exp_params["epsilon_decay_interval"] = args[8]
-        if !check_int_param( exp_params["epsilon_decay_interval"], 1, 1000 )
-            show_error("O parâmetro epsilon_decay_interval precisa estar entre os valores 1 e 1000")
-            exit()
+        if exp_params["epsilon_strategy"] != "static"
+            if !check_int_param( exp_params["epsilon_decay_interval"], 1, 1000 )
+                show_error("O parâmetro epsilon_decay_interval precisa estar entre os valores 1 e 1000")
+                exit()
+            end
         end
 
         exp_params["epsilon_decay_multiplier"] = args[9] 
-        if !check_float_param( exp_params["epsilon_decay_multiplier"], 0.000001, 2.0)
-            show_error("O parâmetro epsilon_decay_multiplier precisa estar entre os valores 0.000001 e 1, mas pode receber valores até 2" )
-            exit()
+        if exp_params["epsilon_strategy"] != "static"
+            if !check_float_param( exp_params["epsilon_decay_multiplier"], 0.000001, 2.0)
+                show_error("O parâmetro epsilon_decay_multiplier precisa estar entre os valores 0.000001 e 1, mas pode receber valores até 2" )
+                exit()
+            end
         end
 
         exp_params["local_search"] = args[10] 
@@ -256,15 +260,19 @@ function main(args)
                 end
         
                 exp_params["epsilon_decay_interval"] = pre_solver_params[6]
-                if !check_int_param( exp_params["epsilon_decay_interval"], 1, 1000 )
-                    show_error("O parâmetro $pre_solver:epsilon_strategy precisa estar entre os valores 1 e 1000" )
-                    exit()
+                if exp_params["epsilon_strategy"] != "static"
+                    if !check_int_param( exp_params["epsilon_decay_interval"], 1, 1000 )
+                        show_error("O parâmetro $pre_solver:epsilon_strategy precisa estar entre os valores 1 e 1000" )
+                        exit()
+                    end
                 end
-        
+
                 exp_params["epsilon_decay_multiplier"] = pre_solver_params[7]
-                if !check_float_param( exp_params["epsilon_decay_multiplier"], 0.000001, 2.0 )
-                    show_error("O parâmetro $pre_solver:epsilon_decay_multiplier precisa estar entre os valores 0.000001 e 2.0" )
-                    exit()
+                if exp_params["epsilon_strategy"] != "static"
+                    if !check_float_param( exp_params["epsilon_decay_multiplier"], 0.000001, 2.0 )
+                        show_error("O parâmetro $pre_solver:epsilon_decay_multiplier precisa estar entre os valores 0.000001 e 2.0" )
+                        exit()
+                    end
                 end
 
                 exp_params["local_search"] = pre_solver_params[8] 

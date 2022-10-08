@@ -265,6 +265,9 @@ function lazy(exp_params)
     cost, n = graph_to_cost_matrix(xml_graph)
 
     total_iterations = 0
+    experiment_start_time = get_time_in_ms()
+    experiment_finish_time = get_time_in_ms()
+
 
     # lower, upper = lagrangean_relaxation(900, false, file)
     # println("lower = ", lower)
@@ -429,6 +432,8 @@ function lazy(exp_params)
 
     min_gap = relative_gap(lazy_model)
 
+    experiment_finish_time = get_time_in_ms()
+
     results = Dict(
         "exp_id" => exp_id,
         "method" => "lazy",
@@ -444,7 +449,10 @@ function lazy(exp_params)
         "optimality_gap" => "-",
         "iterations_ran" => total_iterations,
         "is_optimal" => is_optimal,
-        "stop_condition" => stop_condition
+        "stop_condition" => stop_condition,
+        "start" => experiment_start_time,
+        "finish" => experiment_finish_time,
+        "duration" => experiment_finish_time - experiment_start_time,
     )
 
     for (key, value) in results
