@@ -279,11 +279,11 @@ function lazy(exp_params)
 
         total_iterations = total_iterations + 1
 
-        status = callback_node_status(cb_data, lazy_model)
-        if status != MOI.CALLBACK_NODE_STATUS_INTEGER
-            @debug "subtour_elimination_callback...done: only run at integer solution"
-            return  # Only run at integer solutions
-        end
+#         status = callback_node_status(cb_data, lazy_model)
+#         if status != MOI.CALLBACK_NODE_STATUS_INTEGER
+#             @debug "subtour_elimination_callback...done: only run at integer solution"
+#             return  # Only run at integer solutions
+#         end
         cycle, c = subtour(callback_value.(cb_data, lazy_model[:x]))
         shouldI, h, t = casubtour(callback_value.(cb_data, lazy_model[:x]), callback_value.(cb_data, lazy_model[:x]))
 
