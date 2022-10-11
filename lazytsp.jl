@@ -97,7 +97,6 @@ function tasubtour(edges::Vector{Tuple{Int,Int}}, edges1::Vector{Tuple{Int,Int}}
         
         comb = []
         if length(this_cycle) >= 3
-            @info "ENCONTREI UM CICLO odd = ", this_cycle
             for atual in this_cycle
                 neighbors =
                     [j for (i, j) in edges1 if i == atual && !(j in this_cycle)]
@@ -105,7 +104,6 @@ function tasubtour(edges::Vector{Tuple{Int,Int}}, edges1::Vector{Tuple{Int,Int}}
                     push!(comb, (atual, neighbors))
                 end
             end
-            @info "ENCONTREI UM CICLO comb = ", comb
         end
         
         if length(comb) & 1 == 1 && length(comb) >= 3
@@ -155,7 +153,6 @@ function casubtour(edges::Vector{Tuple{Int,Int}}, edges1::Vector{Tuple{Int,Int}}
         
         comb = []
         if length(this_cycle) >= 3
-            @info "ENCONTREI UM CICLO odd = ", this_cycle
             for atual in this_cycle
                 neighbors = [j for (i, j) in edges1 if i == atual && !(j in this_cycle)]
                 neighborss = []
@@ -169,13 +166,8 @@ function casubtour(edges::Vector{Tuple{Int,Int}}, edges1::Vector{Tuple{Int,Int}}
                     push!(comb, (atual, neighbors, neighborss))
                 end
             end
-            @info "ENCONTREI UM CICLO comb = ", comb
         end
         
-        # if length(this_cycle) > 10
-        #     @debug "subtour...done (1)"
-        #     return this_cycle
-        # end
         if length(comb) & 1 == 1 || length(comb) >= 3
             return true, this_cycle, comb
         end
@@ -269,9 +261,6 @@ function lazy(exp_params)
     experiment_finish_time = get_time_in_ms()
 
 
-    # lower, upper = lagrangean_relaxation(900, false, file)
-    # println("lower = ", lower)
-    # println("upper = ", upper)
     lazy_model = build_tsp_model(optimizer, cost, n, lower, upper)
     function subtour_elimination_callback(cb_data)
 
@@ -279,11 +268,6 @@ function lazy(exp_params)
 
         total_iterations = total_iterations + 1
 
-#         status = callback_node_status(cb_data, lazy_model)
-#         if status != MOI.CALLBACK_NODE_STATUS_INTEGER
-#             @debug "subtour_elimination_callback...done: only run at integer solution"
-#             return  # Only run at integer solutions
-#         end
         cycle, c = subtour(callback_value.(cb_data, lazy_model[:x]))
         shouldI, h, t = casubtour(callback_value.(cb_data, lazy_model[:x]), callback_value.(cb_data, lazy_model[:x]))
 
@@ -339,10 +323,6 @@ function lazy(exp_params)
             # ajuda = (length(t) & 1) == 1 ? 0 : 1
             nodeadded = []
             for i in 1:length(t)
-                @info "generating combs... t[i] = ", t[i]
-                @info "generating combs... t[i][1] = ", t[i][1]
-                @info "generating combs... t[i][2] = ", t[i][2]
-                @info "generating combs... t[i][3] = ", t[i][3]
                 if length(t[i][2]) > 0
                     contador+=1
                     for aqui in t[i][2]
@@ -354,8 +334,6 @@ function lazy(exp_params)
                         for semcriatividade in t[i][3]
                             if length(semcriatividade) > 0
                                 for aindasem in semcriatividade
-                                    @info "CRIAMOS A COMB - NOT YET len nodeadded = ", length(nodeadded)
-                                    @info "CRIAMOS A COMB - NOT YET nodeadded = ", nodeadded
                                     if !(any(x->x==aindasem[2], nodeadded))
                                         AT += 1
                                         push!(T,aindasem)
@@ -369,15 +347,6 @@ function lazy(exp_params)
             end
 
             if contador > 2 && (contador & 1) == 1
-                @info "CRIAMOS A COMB - VITORIA len S = ", length(S)
-                @info "CRIAMOS A COMB - VITORIA S = ", S
-                @info "CRIAMOS A COMB - VITORIA len HT = ", length(HT)
-                @info "CRIAMOS A COMB - VITORIA HT = ", HT
-                @info "CRIAMOS A COMB - VITORIA len T = ", length(T)
-                @info "CRIAMOS A COMB - VITORIA T = ", T
-                @info "CRIAMOS A COMB - VITORIA AT = ", AT
-                @info "CRIAMOS A COMB - VITORIA ceil = ", ceil(3*contador/2)
-                @info "CRIAMOS A COMB - VITORIA tudo = ", (length(h) + AT - ceil(3*contador/2))
                 con = @build_constraint(
                     sum(lazy_model[:x][i, j] for (i, j) in S) + sum(lazy_model[:x][i, j] for (i, j) in T) <= length(h) + AT - ceil(3*contador/2),
                 )
